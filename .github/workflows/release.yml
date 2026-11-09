@@ -140,7 +140,8 @@ jobs:
             "../dist/openpuck-${VERSION}-parts.zip" \
             bootloader.bin partition-table.bin openpuck.bin flash_args)
           cd ../dist
-          # ESP Web Tools manifest for a future browser installer.
+          # ESP Web Tools manifest for the merged image (for third-party
+          # flashing tools; the OpenPuck installer writes the parts instead).
           python - "$VERSION" <<'PY'
           import json, sys
           v = sys.argv[1]
@@ -190,3 +191,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag || needs.release-please.outputs.tag_name }}
         run: gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+
+  # Redeploys the browser installer with this release's firmware. Called as a
+  # reusable workflow, so these permissions must cover everything pages.yml
+  # asks for.
+  pages:
+    name: Deploy installer
+    needs: [release-please, publish]
+    if: ${{ !cancelled() && needs.publish.result == 'success' }}
+    permissions:
+      contents: read       # pages.yml checks out the repo and reads release assets
+      attestations: read   # pages.yml verifies the firmware's build provenance
+      pages: write         # pages.yml publishes the site
+      id-token: write      # pages.yml's deploy job proves its identity to Pages
+    # $/ is GitHub's self-repository syntax: this repo at the running commit.
+    uses: $/.github/workflows/pages.yml
+    with:
+      tag: ${{ inputs.tag || needs.release-please.outputs.tag_name }}

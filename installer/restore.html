@@ -1,0 +1,54 @@
+<!doctype html>
+<!-- OpenPuck browser installer: restore flow. Page wiring is in js/restore-app.js, screens in js/ui.js. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Restore your puck</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <p class="brand">OpenPuck</p>
+  <button type="button" id="sound" class="btn small secondary" aria-pressed="true">Sound: on</button>
+</header>
+<main id="main">
+  <h1>Restore your puck</h1>
+  <p id="status" class="sr-only" aria-live="polite"></p>
+  <noscript><p class="alert">This page needs JavaScript. You can also use the <a href="https://github.com/wavemoran/openpuck/blob/main/docs/install.md#going-back-to-the-original-software">command-line instructions</a>.</p></noscript>
+
+  <section id="intro" hidden>
+    <h2 tabindex="-1">Before you start</h2>
+    <p>This writes your backup file back to the puck. It takes about 2 minutes.</p>
+    <ul class="warn">
+      <li>This puts the puck back exactly as it was when you made the backup. That includes the original software, and it replaces OpenPuck.</li>
+      <li>Restoring is at your own risk.</li>
+      <li>Use only a backup made from this puck. Keep the backup private.</li>
+      <li>Don't unplug the puck while it is being written.</li>
+    </ul>
+    <p><label for="file"><strong>Choose your backup file</strong> (a .bin file, 4 MB)</label></p>
+    <p><input type="file" id="file" accept=".bin"></p>
+    <div id="problems" role="alert"></div>
+    <div class="actions"><button type="button" id="start" class="btn primary big" disabled>Start</button></div>
+  </section>
+
+  <div id="screen" aria-live="off" hidden></div>
+
+  <details class="log">
+    <summary>Details</summary>
+    <p class="note">Technical log, for bug reports.</p>
+    <pre id="log" tabindex="0"></pre>
+    <button type="button" id="copy" class="btn small secondary">Copy</button>
+  </details>
+</main>
+<footer>
+  <p><a href="index.html">Back to the OpenPuck installer</a></p>
+  <p>OpenPuck is an independent project and is not made or supported by the maker of the puck.</p>
+  <p><a href="https://github.com/wavemoran/openpuck">GitHub</a> ·
+     <a href="https://github.com/wavemoran/openpuck/blob/main/docs/install.md">Install guide</a> ·
+     <a href="https://github.com/wavemoran/openpuck/blob/main/docs/troubleshooting.md">Troubleshooting</a></p>
+</footer>
+<script type="module" src="js/restore-app.js"></script>
+</body>
+</html>

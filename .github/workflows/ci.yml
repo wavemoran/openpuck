@@ -71,6 +71,13 @@ jobs:
         with:
           name: coverage-report
           path: build-host/coverage/
+      # The browser installer's JS tests (node:test, no npm packages).
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Run installer tests (fails below 90 % line coverage)
+        run: tools/test-installer.sh
 
   firmware:
     name: Firmware build (ESP-IDF v6.1)

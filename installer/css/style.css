@@ -1,0 +1,81 @@
+/* OpenPuck installer styles: system fonts only, light and dark, works down to 320 px. */
+:root {
+  --bg: #ffffff; --fg: #1b1f24; --muted: #4b5563; --line: #d0d7de; --card: #f4f6f8;
+  --accent: #0a58ca; --accent-fg: #ffffff; --warn-bg: #fff4d6; --warn-line: #9a6700;
+  --bad: #b42318; --ok: #1a7f37;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1419; --fg: #e6edf3; --muted: #aab4c0; --line: #3a434d; --card: #1a2028;
+    --accent: #4c8dff; --accent-fg: #06101f; --warn-bg: #2e2508; --warn-line: #e3b341;
+    --bad: #ff8a80; --ok: #56d364;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-size: 1.125rem; line-height: 1.55; }
+.top, main, footer { max-width: 40rem; margin: 0 auto; padding: 0 16px; }
+.top { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; padding-bottom: 12px; gap: 8px; }
+.brand { margin: 0; font-weight: 700; letter-spacing: 0.02em; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 0.5rem 0 1rem; }
+h2 { font-size: 1.75rem; line-height: 1.25; margin: 1rem 0 0.75rem; }
+h2:focus { outline: none; }
+h3 { font-size: 1.15rem; margin: 1.25rem 0 0.25rem; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible,
+pre:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* Headings get focus only so screen readers announce each new step. */
+h2:focus-visible { outline: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.note { color: var(--muted); font-size: 1rem; }
+.warn { background: var(--warn-bg); border-left: 5px solid var(--warn-line); padding: 12px 16px 12px 36px; border-radius: 6px; }
+.alert { font-weight: 700; color: var(--bad); font-size: 1.25rem; }
+.ok { color: var(--ok); font-weight: 600; }
+
+.btn { font: inherit; font-weight: 600; min-height: 44px; padding: 8px 20px; border-radius: 8px;
+  border: 2px solid var(--accent); background: var(--accent); color: var(--accent-fg); cursor: pointer; }
+.btn.secondary { background: transparent; color: var(--accent); }
+.btn.big { font-size: 1.25rem; min-height: 56px; padding: 10px 32px; }
+.btn.small { font-size: 0.9rem; min-height: 36px; padding: 4px 12px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.actions { margin: 1.25rem 0; display: flex; gap: 12px; flex-wrap: wrap; }
+.check { display: inline-flex; gap: 10px; align-items: center; font-weight: 600; }
+.check input { width: 1.4rem; height: 1.4rem; }
+input[type="file"] { max-width: 100%; font: inherit; }
+
+.facts { background: var(--card); border-radius: 8px; padding: 12px 16px; margin: 1rem 0; }
+.facts dt { font-weight: 700; font-size: 0.95rem; color: var(--muted); }
+.facts dd { margin: 0 0 8px; overflow-wrap: anywhere; }
+.hash { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9rem; }
+
+.progress { margin: 1.25rem 0; }
+.track { height: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.fill { height: 100%; width: 0; background: var(--accent); transition: width 0.2s; }
+.progress-row { display: flex; justify-content: space-between; gap: 12px; margin: 6px 0; font-size: 1rem; }
+.pct { font-weight: 700; }
+
+.visual { max-width: 220px; margin: 0.5rem auto 1rem; }
+.visual svg { width: 100%; height: auto; display: block; }
+.body { fill: var(--card); stroke: var(--fg); stroke-width: 5; }
+.face { fill: none; stroke: var(--line); stroke-width: 4; }
+.ring { fill: none; stroke: var(--accent); stroke-width: 5; transform-origin: 176px 100px; }
+.btn-pressed { fill: var(--accent); }
+.btn-up { fill: var(--ok); }
+.arrow { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.arrow.go { stroke: var(--ok); }
+.step-release h2 { color: var(--ok); font-size: 2.2rem; }
+.step-hold h2 { font-size: 2rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .pulse { animation: pulse 1.2s ease-in-out infinite; }
+  .step-release .arrow { animation: nudge 0.8s ease-in-out infinite alternate; }
+}
+@keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.8); opacity: 0.1; } }
+@keyframes nudge { to { transform: translateY(-4px); } }
+
+.log { margin: 2.5rem 0 1rem; border-top: 1px solid var(--line); padding-top: 12px; }
+.log summary { cursor: pointer; font-weight: 600; }
+.log pre { background: var(--card); padding: 12px; border-radius: 6px; max-height: 14rem; overflow: auto;
+  font-size: 0.8rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+footer { border-top: 1px solid var(--line); margin-top: 1rem; padding-top: 12px; padding-bottom: 32px;
+  font-size: 0.95rem; color: var(--muted); }

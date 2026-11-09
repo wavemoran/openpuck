@@ -1,0 +1,113 @@
+name: Pages
+
+# Deploys the browser installer to GitHub Pages. The site is the installer code
+# from the checked-out ref (normally main) plus the firmware of a release. The
+# firmware is copied into the site because browsers can't fetch GitHub release
+# assets cross-origin (no CORS headers), so the page needs it same-origin.
+#
+# release.yml calls this after publishing a release, because releases created
+# with GITHUB_TOKEN do not trigger other workflows.
+#
+# Run it manually (Actions > Pages > Run workflow) to ship an installer fix
+# between releases: it redeploys the latest release's firmware (or the tag you
+# enter) with the installer from main.
+#
+# One-time setup: Settings > Pages > Source must be "GitHub Actions".
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag to deploy (for example v0.1.0)
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to deploy (for example v0.1.0). Leave empty for the latest release.
+        type: string
+        required: false
+        default: ""
+
+# Deployments take turns; a newer one waits instead of cancelling a running one
+# halfway through.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build installer site
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read       # check out the repo and read release assets
+      attestations: read   # look up the firmware's build provenance
+    env:
+      GH_TOKEN: ${{ github.token }}
+      INPUT_TAG: ${{ inputs.tag }}
+    steps:
+      # The workflow's own ref: installer code comes from here, firmware from
+      # the release.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Resolve release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="$INPUT_TAG"
+          if [ -z "$TAG" ]; then
+            TAG="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)"
+          fi
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Not a release tag: $TAG"; exit 1; }
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+      - name: Download firmware
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            -p "openpuck-${VERSION}-parts.zip" -p SHA256SUMS -D dl
+      # --ignore-missing skips files not downloaded, so also require that the
+      # parts zip is listed (otherwise nothing would have been checked).
+      - name: Verify checksum
+        shell: bash
+        working-directory: dl
+        run: |
+          set -euo pipefail
+          grep -qF "openpuck-${VERSION}-parts.zip" SHA256SUMS || { echo "SHA256SUMS does not list the parts zip"; exit 1; }
+          sha256sum -c --ignore-missing SHA256SUMS
+      # The checksum file comes from the same release, so it only catches
+      # corruption. The attestation proves release.yml in this repo built it.
+      - name: Verify build provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh attestation verify "dl/openpuck-${VERSION}-parts.zip" \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"
+      - name: Assemble site
+        shell: bash
+        run: |
+          python3 tools/installer_site.py \
+            --parts-zip "dl/openpuck-${VERSION}-parts.zip" \
+            --version "$VERSION" --out site
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-26.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write      # publish the site
+      id-token: write   # prove to Pages that the deploy comes from this workflow
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

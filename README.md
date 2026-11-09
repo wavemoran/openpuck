@@ -37,8 +37,10 @@ MetalFab Tokens. "Life Puck" is used only to describe compatible hardware.
 
 ## Get started
 
-1. **[Install guide](docs/install.md):** back up your puck, then install
-   OpenPuck. An easy browser installer is planned but not ready yet.
+1. **[Install from your browser](https://wavemoran.github.io/openpuck/):**
+   back up your puck, then install OpenPuck, with nothing to set up. The
+   [install guide](docs/install.md) has the steps, supported browsers and a
+   command-line alternative.
 2. **[User guide](docs/user-guide.md):** how every screen and setting works.
 3. Stuck? See [troubleshooting](docs/troubleshooting.md) and
    [SUPPORT.md](SUPPORT.md).

@@ -58,6 +58,16 @@ The run fails if line coverage of `puck_core` drops below 90%. GitHub Actions
 runs the tests and the firmware build on every push. Add or update tests in
 `test/host/` with your change.
 
+The browser installer has its own tests (Node 22 or newer, no packages to
+install), with a 90% line coverage gate:
+
+```sh
+tools/test-installer.sh
+```
+
+Add or update tests in `installer/test/` with changes to `installer/js/`. See
+[`docs/installer.md`](docs/installer.md).
+
 ## Screenshots
 
 The images in `docs/images/` are rendered from the real UI code on your
@@ -85,7 +95,10 @@ main/counter.c         game, history, timer and settings + when-to-save policy
 main/ui*.c             counter screen, menu, history, settings, colors, timer page
 main/main.c            startup order
 test/host/             Unity unit tests for puck_core
+installer/             browser installer (static site, no build step), JS tests in test/
 tools/flash.py         back up, flash and restore over USB
+tools/installer_site.py  assemble the installer site with the firmware to flash
+tools/test-installer.sh  run the installer tests with coverage
 tools/test.sh          run unit tests with a coverage report
 tools/screenshots.sh   render docs/images/*.png from the real UI on the host
 tools/screenshots/     host renderer: stubs, LVGL config, scripted scenes

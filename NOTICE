@@ -36,6 +36,14 @@ Atkinson Hyperlegible Next, Bold (https://github.com/googlefonts/atkinson-hyperl
   SIL Open Font License 1.1 (see fonts/OFL.txt). The digits in main/fonts/
   are generated from this font.
 
+Included in the browser installer
+---------------------------------
+
+esptool-js (https://github.com/espressif/esptool-js)
+  Copyright Espressif Systems (Shanghai) CO LTD. Apache License 2.0.
+  Vendored, unmodified, in installer/vendor/esptool-js/ (see its LICENSE and
+  README.md).
+
 Used only for development and testing (not part of the firmware)
 -----------------------------------------------------------------
 

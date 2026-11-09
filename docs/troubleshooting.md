@@ -47,3 +47,25 @@ release it. See the [install guide](install.md#first-install-and-updates).
 before installing. See the [install guide](install.md#going-back-to-the-original-software).
 
 More technical detail is in [flashing.md](flashing.md).
+
+## The browser installer
+
+**My puck is not in the list.** Use a USB-C cable that carries data (many only
+charge), make sure the puck is turned on, and try another USB port.
+
+**The page says my browser won't work.** On a Mac, use Firefox. Chrome and
+Edge on a Mac can't make a complete backup. Safari, phones and tablets are not
+supported. See the [install guide](install.md#supported-browsers), or use the
+[command-line steps](install.md#command-line-install).
+
+**"The power button is still held."** Let go of the button when the page tells
+you to.
+
+**The backup keeps failing.** Try another cable or USB port. If it still
+fails, use the [command-line steps](install.md#command-line-install).
+
+**An error appeared while writing.** Do not unplug the puck. Click **Try
+again**, or use the [restore page](https://wavemoran.github.io/openpuck/restore.html)
+with your backup file.
+
+For how the page works, see [installer.md](installer.md).

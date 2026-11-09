@@ -6,40 +6,36 @@
 their puck and install OpenPuck in a few minutes, **without installing
 anything**.
 
-### Primary: browser installer on GitHub Pages
+### Browser installer on GitHub Pages: built
 
 A web page using Espressif's [esptool-js](https://github.com/espressif/esptool-js)
-over the Web Serial API:
+over the Web Serial API. Guided flow, one step per screen: connect, hold the
+power button (only if the puck switched off on connect), back up (required,
+downloaded before anything is written), install and verify, done. A separate
+restore page writes a backup file back. Release builds publish the
+bootloader, partition table and app plus a manifest, so the page always offers
+the latest release.
 
-- Works in **Chrome, Edge and Opera on Windows, macOS, Linux and ChromeOS**.
-  Not Safari, Firefox or phones; the page must detect this and say so plainly.
-- No drivers needed: the puck's USB-Serial-JTAG is a standard CDC device
-  (built into Windows 10+, macOS and Linux).
-- Guided flow, one step per screen, with pictures:
-  1. **Connect**: plug in, click Connect, pick the puck in the browser's list.
-  2. **Hold the button**, only if the puck switched off on connect (factory
-     firmware): "Press and hold the power button… keep holding…", then
-     "Release now". Same logic as `tools/flash.py` (see
-     [`first-install-log.md`](first-install-log.md)). Show the cue on screen
-     and play a sound.
-  3. **Back up**: read all 4 MB and download `life-puck-backup-<mac>.bin`
-     automatically, before anything is written. Required; can't be skipped.
-  4. **Install**: write and verify OpenPuck, with a progress bar and clear
-     "don't unplug" messaging.
-  5. **Done**: "Press the power button to start OpenPuck."
-  - **Restore** page: pick your backup file, and it writes it back.
-- Release builds publish the bootloader, partition table and app (or one merged
-  image) plus a manifest, so the page always offers the latest release.
+How it works, supported browsers and how to run the tests are in
+[`installer.md`](installer.md). Owners start at [`install.md`](install.md).
 
-**To prove early (spike):**
+**Spike results:**
 
-- esptool-js can drive the latch registers (`writeReg`) and read GPIO10 in the
-  same session.
-- Browser behavior when the puck re-enumerates after the power-on: is the
-  already-granted port reusable via `navigator.serial.getPorts()` and the
-  `connect` event, or must the user pick it again?
-- DTR/RTS handling on port open in each OS, which is what caused the macOS
-  resets.
+- esptool-js can drive the latch registers and read GPIO10 in the same session.
+- After the puck re-enumerates, a granted port can be reopened without a user
+  gesture through the `connect` event. `getPorts()` is empty on a first visit.
+- esptool-js 0.7.0 `hard_reset` never raises RTS, and its `readFlash` is not
+  usable, so the installer has its own reset and verified read.
+- Chrome needs a 1 MiB buffer size when opening the port.
+- Chrome on macOS corrupts runs of `0xFF` bytes while reading, so Macs need
+  Firefox.
+
+**Remaining:**
+
+- Test on Windows and Linux hardware.
+- Test the original-software path (power button hold) end to end on hardware.
+- Chrome on macOS: would need a small helper uploaded to the puck that avoids
+  sending raw `0xFF` runs.
 
 ### Fallback: `tools/flash.py`
 
@@ -62,7 +58,7 @@ thin layer. That makes most of the firmware testable on a normal computer.
 | Serialization | Saved-state format | Round-trip and compatibility tests with stored fixtures from every released version | Every push |
 | UI | Screens render without errors | LVGL on the host (headless), screenshot comparison | Every push (later) |
 | Firmware build | Full ESP-IDF build for esp32c3, size report, warnings as errors | `espressif/idf:v6.1` container | Every push |
-| Installer | Web installer logic | JS unit tests with a mocked esptool-js/serial port | Every push (once it exists) |
+| Installer | Web installer logic | JS unit tests with a mocked esptool-js/serial port | Every push  |
 | Hardware-in-the-loop | Flash a real puck, boot, check the log | Self-hosted runner with a puck attached | Optional, before releases |
 
 ## 3. GitHub Actions

@@ -48,13 +48,24 @@ failed build), run the **Release** workflow manually (Actions > Release > Run
 workflow) and enter the tag, such as `v0.1.0`. The tag must match `version.txt`
 at that tag.
 
+## Browser installer
+
+Each release redeploys https://wavemoran.github.io/openpuck/ with that
+release's firmware, after verifying its checksum and build provenance.
+
+To redeploy manually (for example to ship an installer fix between releases),
+run Actions > Pages > Run workflow. An empty tag uses the latest release; the
+installer itself always comes from the branch you run it on (normally `main`).
+
+One-time setup: Settings > Pages > Source: **GitHub Actions**.
+
 ## What a release contains
 
 | File | Purpose |
 | --- | --- |
 | `openpuck-<version>-esp32c3.bin` | Single merged image, flash at offset 0 |
 | `openpuck-<version>-parts.zip` | Bootloader, partition table, app and `flash_args` |
-| `manifest.json` | ESP Web Tools manifest for a future browser installer |
+| `manifest.json` | ESP Web Tools manifest for the merged image (other web flashers; the OpenPuck installer uses the parts) |
 | `SHA256SUMS` | SHA-256 checksums of the files above |
 
 All files carry a build provenance attestation. The firmware is the release

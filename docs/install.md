@@ -1,12 +1,10 @@
 # Installing OpenPuck
 
 This page shows how to put OpenPuck on your Life Puck, and how to go back to
-the original software.
-
-> **An easy browser installer is planned but not available yet.** It will let
-> you install from a web page with no extra software. Until then, the steps
-> below use a small command-line tool. This page will be updated when the
-> browser installer is ready.
+the original software. The easiest way is the
+[browser installer](https://wavemoran.github.io/openpuck/). There is also a
+[command-line install](#command-line-install) for browsers that can't do it
+and for developers.
 
 ## Read this first
 
@@ -22,7 +20,93 @@ the original software.
   do not share it or post it online. Store it somewhere safe, like a cloud
   drive or a USB stick.
 
-## What you need
+## Install with your browser
+
+Open the installer: **<https://wavemoran.github.io/openpuck/>**
+
+Everything happens on that page. There is nothing to download or set up first.
+
+### What you need
+
+- A computer with a supported browser (see below).
+- A **USB-C cable that carries data.** Many cables that come with lights or
+  small gadgets only charge and will not work. If the puck is not found, try a
+  different cable first.
+- A charged puck.
+- About 10 minutes.
+
+### Supported browsers
+
+- **Firefox 159 or newer**, on Windows, macOS or Linux.
+- **Chrome or Edge**, on Windows, Linux or ChromeOS.
+
+It does not work in Safari, or on phones and tablets.
+
+**On a Mac, please use Firefox.** Chrome, Edge and other Chromium browsers on a
+Mac lose data while reading the puck, so they can't make a complete backup.
+The page will tell you if your browser won't work.
+
+If it doesn't work for you, use the [command-line install](#command-line-install)
+below and [tell us](https://github.com/wavemoran/openpuck/issues) what happened.
+
+### The steps
+
+1. **Connect.** Plug the puck into your computer and turn it on (press the
+   power button). Then click **Connect**. Your browser shows a list of devices.
+   Pick **USB JTAG/serial debug unit**.
+2. **Hold the power button, if asked.** If the puck switches off when it
+   connects, this is normal while the original software is installed. Press and
+   hold the power button and **keep holding it** until the page tells you to
+   release it. The page shows it on screen, plays a sound and says it out loud.
+3. **Back up.** The page saves everything on your puck (about 25 seconds) and
+   downloads a file named like `life-puck-backup-<id>-<date>-<time>.bin`. **Move
+   it somewhere safe.** The page asks you to confirm you saved it, and does not
+   write anything to the puck until you do.
+4. **Install.** The page writes OpenPuck and checks it. **Do not unplug the
+   puck while it works.**
+5. **Done.** OpenPuck starts by itself. If the screen stays dark, press the
+   power button.
+
+Next: the [user guide](user-guide.md).
+
+### Updating later
+
+Open the same page again. It installs the latest version. You do not need to
+hold the button, because OpenPuck keeps the puck on while the page connects. It
+makes a new backup each time, but **keep your first backup**: it is the only
+one with the original software. Your settings are kept when the update does not
+change how the puck's storage is laid out; if it does, the page starts them
+fresh.
+
+## Going back to the original software
+
+You need the backup file you made before installing.
+
+**In your browser:** open the
+[restore page](https://wavemoran.github.io/openpuck/restore.html), pick your
+backup file, and follow the steps. The page checks the file, writes it back and
+checks the result. It uses the same browsers and the same power button hold as
+the installer. Press the power button afterward if the puck stays off.
+Restoring puts the puck back the way it was when you made the backup.
+
+**On the command line:**
+
+```sh
+python tools/flash.py restore my-puck-backup.bin
+```
+
+The tool checks the file, writes it, and checks the result. Press the power
+button afterward if the puck stays off.
+
+If you restore the original software, you will need the button hold again the
+next time you install.
+
+## Command-line install
+
+Use this if your browser isn't supported, or if you are a developer. It does
+the same job with a small command-line tool.
+
+### What you need
 
 - A computer (Windows, macOS or Linux).
 - A **USB-C cable that carries data.** Many cables that come with lights or
@@ -31,9 +115,9 @@ the original software.
 - A charged puck.
 - About 30 minutes the first time, mostly for setting up the tools.
 - A little comfort typing commands into a terminal. If that is not for you,
-  you may want to wait for the browser installer.
+  try the browser installer instead.
 
-## Step 1: Set up the tools
+### Step 1: Set up the tools
 
 The tool needs Espressif's ESP-IDF development kit version 6.1. It also gives
 you everything the install tool relies on.
@@ -51,7 +135,7 @@ you everything the install tool relies on.
    source ~/.espressif/tools/activate_idf_v6.1.sh
    ```
 
-## Step 2: Back up your puck
+### Step 2: Back up your puck
 
 1. Connect the puck to your computer with the USB-C data cable.
 2. Run:
@@ -71,7 +155,7 @@ you everything the install tool relies on.
 Want to check the connection first? `python tools/flash.py info` only reads
 information from the puck and changes nothing.
 
-## Step 3: Install OpenPuck
+### Step 3: Install OpenPuck
 
 1. Build OpenPuck. This makes the files the tool will write:
 
@@ -96,7 +180,7 @@ information from the puck and changes nothing.
 
 Next: the [user guide](user-guide.md).
 
-## First install and updates
+### First install and updates
 
 The puck only stays on if its software tells it to. When the install tool
 connects, it restarts the puck.
@@ -113,24 +197,15 @@ connects, it restarts the puck.
 - If you restore the original software, you will need the button hold again
   the next time.
 
-## Going back to the original software
-
-If you want the original software again, run:
-
-```sh
-python tools/flash.py restore my-puck-backup.bin
-```
-
-The tool checks the file, writes it, and checks the result. Press the power
-button afterward if the puck stays off. Restoring puts the puck back the way it
-was when you made the backup.
-
 ## If something goes wrong
 
 - **"The puck never appeared on USB":** try another cable (a data cable, not
   charge-only) or another USB port.
 - **The puck is off after a step:** press the power button.
+- **The browser page shows an error:** see
+  [troubleshooting](troubleshooting.md#the-browser-installer).
 - **Stuck or not sure:** see [troubleshooting](troubleshooting.md), or the
   technical details in [flashing.md](flashing.md).
 
-If you have a backup, you can always run the restore command above.
+If you have a backup, you can always restore it (see
+[Going back](#going-back-to-the-original-software)).

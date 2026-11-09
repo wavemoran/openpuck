@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- OpenPuck browser installer: install flow. Page wiring is in js/app.js, screens in js/ui.js. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Install OpenPuck</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <p class="brand">OpenPuck</p>
+  <button type="button" id="sound" class="btn small secondary" aria-pressed="true">Sound: on</button>
+</header>
+<main id="main">
+  <h1>Install OpenPuck</h1>
+  <p id="status" class="sr-only" aria-live="polite"></p>
+  <noscript><p class="alert">This installer needs JavaScript. You can also use the <a href="https://github.com/wavemoran/openpuck/blob/main/docs/install.md">command-line instructions</a>.</p></noscript>
+
+  <section id="intro" hidden>
+    <h2 tabindex="-1">Before you start</h2>
+    <p>This puts OpenPuck on your Life Puck. It will <strong>back up</strong> the puck, then <strong>install</strong> OpenPuck. It takes about 2 minutes.</p>
+    <h3>What you need</h3>
+    <ul>
+      <li>A charged puck</li>
+      <li>A USB-C cable that carries data (some cables only charge)</li>
+      <li>A computer</li>
+    </ul>
+    <h3>Please read</h3>
+    <ul class="warn">
+      <li>Installing is at your own risk. It may affect your warranty.</li>
+      <li>The backup is the only way back to the original software. The installer won't continue until you have saved it.</li>
+      <li>Keep your backup file private. It contains the original software, so don't share it or post it online.</li>
+      <li>Don't unplug the puck while it is being written.</li>
+    </ul>
+    <div class="actions"><button type="button" id="start" class="btn primary big">Start</button></div>
+  </section>
+
+  <div id="screen" aria-live="off" hidden></div>
+
+  <details class="log">
+    <summary>Details</summary>
+    <p class="note">Technical log, for bug reports.</p>
+    <pre id="log" tabindex="0"></pre>
+    <button type="button" id="copy" class="btn small secondary">Copy</button>
+  </details>
+</main>
+<footer>
+  <p><a href="restore.html">Go back to the original software</a></p>
+  <p>OpenPuck is an independent project and is not made or supported by the maker of the puck.</p>
+  <p><a href="https://github.com/wavemoran/openpuck">GitHub</a> ·
+     <a href="https://github.com/wavemoran/openpuck/blob/main/docs/install.md">Install guide</a> ·
+     <a href="https://github.com/wavemoran/openpuck/blob/main/docs/troubleshooting.md">Troubleshooting</a></p>
+</footer>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

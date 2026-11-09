@@ -3,6 +3,7 @@ build/
 build-host/
 build-dev/
 build-screenshots/
+build-installer/
 sdkconfig
 sdkconfig.old
 managed_components/
