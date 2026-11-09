@@ -1,0 +1,28 @@
+name: Dependency review
+
+# Blocks pull requests that add dependencies with known vulnerabilities
+# (https://github.com/actions/dependency-review-action). Runs on every PR (no
+# path filter, so it can be a required check without ever staying pending).
+on:
+  pull_request:
+
+# A newer push to the same PR supersedes runs still in progress.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read  # check out the repo and read the PR's dependency changes
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: moderate

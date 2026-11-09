@@ -61,8 +61,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Pinned for reproducible coverage results; bump by hand (Dependabot
+      # doesn't track pipx installs).
       - name: Install gcovr
-        run: pipx install gcovr
+        run: pipx install gcovr==8.8
       - name: Run tests (fails below 90 % line coverage)
         run: tools/test.sh
       - name: Upload coverage report
