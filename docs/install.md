@@ -16,6 +16,12 @@ and for developers.
   device can fail. If you have a backup, you can put the original software
   back (see [Going back](#going-back-to-the-original-software)). Installing
   OpenPuck may affect your warranty.
+- **Installing can brick your puck.** Installing replaces the software on it.
+  If something goes wrong, the puck can stop working. The backup and the
+  restore page can usually bring it back, but there is no guarantee.
+- **OpenPuck is unofficial and provided as is.** It is an independent project,
+  not made, supported or endorsed by the maker of the Life Puck, and it comes
+  without warranty of any kind (Apache License 2.0).
 - **Keep your backup file private.** It contains the original software, so
   do not share it or post it online. Store it somewhere safe, like a cloud
   drive or a USB stick.
@@ -57,7 +63,7 @@ below and [tell us](https://github.com/wavemoran/openpuck/issues) what happened.
 2. **Hold the power button, if asked.** If the puck switches off when it
    connects, this is normal while the original software is installed. Press and
    hold the power button and **keep holding it** until the page tells you to
-   release it. The page shows it on screen, plays a sound and says it out loud.
+   release it. The page shows it on screen. It can also tell you out loud (turn on sound on the first screen).
 3. **Back up.** The page saves everything on your puck (about 25 seconds) and
    downloads a file named like `life-puck-backup-<id>-<date>-<time>.bin`. **Move
    it somewhere safe.** The page asks you to confirm you saved it, and does not

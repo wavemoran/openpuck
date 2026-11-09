@@ -6,7 +6,7 @@ import { LINKS, createCues, createPortBridge, createView, el, guardUnload, wireL
 
 const $ = (id) => document.getElementById(id);
 const refs = { main: $("main"), status: $("status"), logBox: $("log") };
-const cues = createCues($("sound"));
+const cues = createCues();
 const bridge = createPortBridge(navigator.serial, USB_FILTERS);
 let controller = new AbortController();
 let last = null;
@@ -52,6 +52,8 @@ async function main() {
   }
   deps = flow.defaultDeps({ serial: navigator.serial, requestPort: bridge.requestPort });
   $("intro").hidden = false;
+  $("steps").hidden = false;
+  $("ack").addEventListener("change", () => { $("start").disabled = !$("ack").checked; });
   $("start").addEventListener("click", () => { cues.unlock(); run(); });
 }
 main();

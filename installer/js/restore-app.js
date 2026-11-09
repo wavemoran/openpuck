@@ -6,7 +6,7 @@ import { LINKS, createCues, createPortBridge, createView, el, guardUnload, wireL
 
 const $ = (id) => document.getElementById(id);
 const refs = { main: $("main"), status: $("status"), logBox: $("log") };
-const cues = createCues($("sound"));
+const cues = createCues();
 const bridge = createPortBridge(navigator.serial, USB_FILTERS);
 let controller = new AbortController();
 let last = null;
@@ -21,6 +21,8 @@ const handlers = {
 const view = createView({ mode: "restore", refs, cues, bridge, handlers, setBusy: guardUnload() });
 wireLog({ logBox: refs.logBox, copyButton: $("copy") });
 
+// Start needs a valid backup file and the risk checkbox.
+function updateStart() { $("start").disabled = !(backup && $("ack").checked); }
 async function finished(promise) { last = await promise; }
 function run() {
   controller = new AbortController();
@@ -32,14 +34,14 @@ async function onFile(event, checkBackup) {
   const file = event.target.files[0];
   const problems = $("problems");
   backup = null;
-  $("start").disabled = true;
+  updateStart();
   problems.replaceChildren();
   if (!file) return;
   const bytes = new Uint8Array(await file.arrayBuffer());
   const check = checkBackup(bytes);
   if (check.ok) {
     backup = bytes;
-    $("start").disabled = false;
+    updateStart();
     problems.append(el("p", { class: "ok" }, `${file.name} looks like a full backup.`));
   } else {
     problems.append(el("p", { class: "alert" }, "This file isn't a full backup of the puck:"),
@@ -68,6 +70,8 @@ async function main() {
   }
   deps = flow.defaultDeps({ serial: navigator.serial, requestPort: bridge.requestPort });
   $("intro").hidden = false;
+  $("steps").hidden = false;
+  $("ack").addEventListener("change", updateStart);
   $("file").addEventListener("change", (e) => onFile(e, checkBackup));
   $("start").addEventListener("click", () => { cues.unlock(); run(); });
 }

@@ -1,57 +1,76 @@
 <!doctype html>
-<!-- OpenPuck browser installer: install flow. Page wiring is in js/app.js, screens in js/ui.js. -->
+<!-- OpenPuck browser installer. Page wiring is in js/app.js, screens in js/ui.js. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Install OpenPuck</title>
+<link rel="icon" href="img/openpuck-avatar.svg" type="image/svg+xml">
+<link rel="icon" href="img/openpuck-avatar.png" type="image/png">
+<link rel="apple-touch-icon" href="img/openpuck-avatar.png">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="top">
-  <p class="brand">OpenPuck</p>
-  <button type="button" id="sound" class="btn small secondary" aria-pressed="true">Sound: on</button>
+  <picture class="logo">
+    <source media="(prefers-color-scheme: dark)" srcset="img/openpuck-lockup.svg">
+    <img src="img/openpuck-lockup-light.svg" alt="OpenPuck" height="34">
+  </picture>
+  <div class="tools">
+    <a class="quiet" href="https://github.com/wavemoran/openpuck" target="_blank" rel="noopener" aria-label="OpenPuck on GitHub"><svg class="gh" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.5 7.5 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>GitHub</span></a>
+  </div>
 </header>
 <main id="main">
   <h1>Install OpenPuck</h1>
   <p id="status" class="sr-only" aria-live="polite"></p>
   <noscript><p class="alert">This installer needs JavaScript. You can also use the <a href="https://github.com/wavemoran/openpuck/blob/main/docs/install.md">command-line instructions</a>.</p></noscript>
+  <ol id="steps" class="steps" aria-label="Progress" hidden><li aria-current="step">Connect</li><li>Back up</li><li>Install</li><li>Done</li></ol>
 
-  <section id="intro" hidden>
+  <section id="intro" class="card" hidden>
     <h2 tabindex="-1">Before you start</h2>
-    <p>This puts OpenPuck on your Life Puck. It will <strong>back up</strong> the puck, then <strong>install</strong> OpenPuck. It takes about 2 minutes.</p>
+    <p class="what"><strong>What is OpenPuck?</strong> Free, open-source software for the Life Puck: life totals for one or two players, a game timer, history, colors and a battery indicator.</p>
+    <p class="linkrow">
+      <a class="btn secondary" href="https://github.com/wavemoran/openpuck/blob/main/docs/user-guide.md" target="_blank" rel="noopener">Read the user guide</a>
+      <a class="btn secondary" href="https://github.com/wavemoran/openpuck" target="_blank" rel="noopener">View on GitHub</a>
+    </p>
+    <section class="caution" aria-labelledby="caution-title">
+      <h3 id="caution-title">Unofficial software. Use at your own risk.</h3>
+      <ul>
+        <li>OpenPuck is an independent, unofficial project. It is not made, supported or endorsed by the maker of the Life Puck, and they can't help you with it.</li>
+        <li>Installing replaces the software on your puck. If something goes wrong, the puck can stop working (&ldquo;bricked&rdquo;). The backup and the <a href="restore.html">restore page</a> can usually bring it back, but there is no guarantee.</li>
+        <li>It may void your warranty.</li>
+        <li>OpenPuck is provided as is, without warranty of any kind (Apache License 2.0).</li>
+      </ul>
+    </section>
+    <p class="ack"><label class="check"><input type="checkbox" id="ack"> <span>I understand the risks and want to continue</span></label></p>
     <h3>What you need</h3>
-    <ul>
+    <ul class="plain">
       <li>A charged puck</li>
       <li>A USB-C cable that carries data (some cables only charge)</li>
-      <li>A computer</li>
+      <li>A computer. It takes about 2 minutes.</li>
     </ul>
-    <h3>Please read</h3>
-    <ul class="warn">
-      <li>Installing is at your own risk. It may affect your warranty.</li>
-      <li>The backup is the only way back to the original software. The installer won't continue until you have saved it.</li>
-      <li>Keep your backup file private. It contains the original software, so don't share it or post it online.</li>
-      <li>Don't unplug the puck while it is being written.</li>
-    </ul>
-    <div class="actions"><button type="button" id="start" class="btn primary big">Start</button></div>
+    <p class="note">The installer first saves a backup of your puck and won't continue until you have saved it. Keep that file private: it contains the original software, so don't share it or post it online. Don't unplug the puck while it is being written.</p>
+    <div id="sound-note" class="sound-box"></div>
+    <div class="actions"><button type="button" id="start" class="btn primary big" disabled>Start</button></div>
   </section>
 
-  <div id="screen" aria-live="off" hidden></div>
+  <div id="screen" class="card" aria-live="off" hidden></div>
 
   <details class="log">
     <summary>Details</summary>
     <p class="note">Technical log, for bug reports.</p>
     <pre id="log" tabindex="0"></pre>
-    <button type="button" id="copy" class="btn small secondary">Copy</button>
+    <button type="button" id="copy" class="quiet">Copy</button>
   </details>
 </main>
 <footer>
-  <p><a href="restore.html">Go back to the original software</a></p>
-  <p>OpenPuck is an independent project and is not made or supported by the maker of the puck.</p>
-  <p><a href="https://github.com/wavemoran/openpuck">GitHub</a> ·
+  <p class="disclaimer">OpenPuck is an unofficial project, not affiliated with or supported by the maker of the Life Puck. Use at your own risk.</p>
+  <p class="links"><a href="https://github.com/wavemoran/openpuck/blob/main/docs/user-guide.md">User guide</a> ·
      <a href="https://github.com/wavemoran/openpuck/blob/main/docs/install.md">Install guide</a> ·
-     <a href="https://github.com/wavemoran/openpuck/blob/main/docs/troubleshooting.md">Troubleshooting</a></p>
+     <a href="https://github.com/wavemoran/openpuck/blob/main/docs/troubleshooting.md">Troubleshooting</a> ·
+     <a href="https://github.com/wavemoran/openpuck">GitHub</a></p>
+  <p class="links"><a href="restore.html">Go back to the original software</a></p>
 </footer>
 <script type="module" src="js/app.js"></script>
 </body>
