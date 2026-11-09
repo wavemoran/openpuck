@@ -67,8 +67,9 @@ One-time setup: Settings > Pages > Source: **GitHub Actions**.
 | `openpuck-<version>-parts.zip` | Bootloader, partition table, app and `flash_args` |
 | `manifest.json` | ESP Web Tools manifest for the merged image (other web flashers; the OpenPuck installer uses the parts) |
 | `SHA256SUMS` | SHA-256 checksums of the files above |
+| `openpuck-<version>.intoto.jsonl` | Signed build provenance (Sigstore bundle) for the files above |
 
-All files carry a build provenance attestation. The firmware is the release
+All files except the bundle itself carry a build provenance attestation. The firmware is the release
 profile (`sdkconfig.defaults`) built in the pinned ESP-IDF v6.1 container.
 
 ## Verifying a download
@@ -78,6 +79,14 @@ Download the files into one folder, then:
 ```sh
 sha256sum -c SHA256SUMS        # on macOS: shasum -a 256 -c SHA256SUMS
 gh attestation verify openpuck-<version>-esp32c3.bin --repo wavemoran/openpuck
+```
+
+To verify offline, without looking the attestation up on GitHub, use the
+provenance bundle from the release:
+
+```sh
+gh attestation verify openpuck-<version>-esp32c3.bin --repo wavemoran/openpuck \
+  --bundle openpuck-<version>.intoto.jsonl
 ```
 
 ## Forcing a version
