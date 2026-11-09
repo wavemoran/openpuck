@@ -69,8 +69,9 @@ One-time setup: Settings > Pages > Source: **GitHub Actions**.
 | `SHA256SUMS` | SHA-256 checksums of the files above |
 | `openpuck-<version>.intoto.jsonl` | Signed build provenance (Sigstore bundle) for the files above |
 
-All files except the bundle itself carry a build provenance attestation. The firmware is the release
-profile (`sdkconfig.defaults`) built in the pinned ESP-IDF v6.1 container.
+All files except the bundle itself carry a build provenance attestation. The
+firmware is the release profile (`sdkconfig.defaults`) built in the pinned
+ESP-IDF v6.1 container.
 
 ## Verifying a download
 
