@@ -5,6 +5,11 @@
   </picture>
 </p>
 
+<p align="center">
+  <a href="https://github.com/wavemoran/openpuck/actions/workflows/ci.yml"><img src="https://github.com/wavemoran/openpuck/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/wavemoran/openpuck"><img src="https://api.scorecard.dev/projects/github.com/wavemoran/openpuck/badge" alt="OpenSSF Scorecard"></a>
+</p>
+
 # OpenPuck
 
 OpenPuck is free, open-source software for your Life Puck, the round-screen
