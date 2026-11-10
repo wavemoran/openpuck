@@ -14,7 +14,7 @@
 //   isButtonHeld, waitForButtonRelease, waitForPuck, safeDisconnect, resetToApp, prepareFlash,
 //   readFlashVerified, writeImagesVerified, sha256Hex, sleep.
 import {
-  BUTTON_RELEASE_TIMEOUT_MS, BUTTON_SETTLE_MS, EXPECTED_FLASH_ID, FLASH_SIZE,
+  BUTTON_RELEASE_TIMEOUT_MS, BUTTON_SETTLE_MS, FLASH_SIZE,
   PUCK_SETTLE_MS, PUCK_WAIT_TIMEOUT_MS,
 } from "./constants.js";
 import {
@@ -92,11 +92,14 @@ export async function connectPuck(port, { ui, deps, signal, session = { conn: nu
   return { runningOpenPuck: false, ...second };
 }
 
-function assertFlashId(info) {
-  if (info.flashId !== EXPECTED_FLASH_ID) {
+function assertCompatibleFlash(info) {
+  const flashId = info.flashId >>> 0;
+  const capacity = (flashId >>> 16) & 0xff;
+  const type = (flashId >>> 8) & 0xff;
+  const manufacturer = flashId & 0xff;
+  if (capacity !== 0x16 || type === 0xff || manufacturer === 0x00 || manufacturer === 0xff) {
     throw new Error(
-      `This puck has an unexpected flash chip (ID 0x${(info.flashId >>> 0).toString(16)}, expected ` +
-      `0x${EXPECTED_FLASH_ID.toString(16)}). Nothing was written.`);
+      `This puck has an unexpected flash chip (ID 0x${flashId.toString(16)}). Nothing was written.`);
   }
 }
 
@@ -186,7 +189,7 @@ export async function runInstall({ ui, deps, signal, now = () => new Date() }) {
 
     ui.show("prepare", {});
     const info = await deps.prepareFlash(session.conn.loader);
-    assertFlashId(info);
+    assertCompatibleFlash(info);
 
     ui.show("backup", {});
     const backup = await deps.readFlashVerified(session.conn.loader, 0, FLASH_SIZE, {
@@ -246,7 +249,7 @@ export async function runRestore(fileBytes, { ui, deps, signal }) {
     const port = await deps.requestPort();
     await connectPuck(port, { ui, deps, signal, session });
     ui.show("prepare", {});
-    assertFlashId(await deps.prepareFlash(session.conn.loader));
+    assertCompatibleFlash(await deps.prepareFlash(session.conn.loader));
     return await rest();
   } catch (e) {
     return fail(e, { session, ui, deps, resume: null });

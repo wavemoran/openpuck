@@ -5,9 +5,8 @@ export const USB_VID = 0x303a;
 export const USB_PID = 0x1001;
 export const USB_FILTERS = [{ usbVendorId: USB_VID, usbProductId: USB_PID }];
 
-/** 4 MB flash and the flash ID (manufacturer/type/size) we are willing to write to. */
+/** Flash capacity required by the firmware and full-backup format. */
 export const FLASH_SIZE = 4 * 1024 * 1024;
-export const EXPECTED_FLASH_ID = 0x164020;
 
 export const PARTITION_TABLE_OFFSET = 0x8000;
 /** Bytes of the partition table compared to detect a layout change. */

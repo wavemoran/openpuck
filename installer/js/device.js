@@ -84,7 +84,7 @@ export async function waitForButtonRelease(loader, options = {}) {
 /**
  * Upload the flasher stub, attach the flash and read its ID and the MAC address.
  * @param {object} loader
- * @returns {Promise<{flashId: number, flashSize: number, mac: string, chipName: string}>}
+ * @returns {Promise<{flashId: number, flashSize: number|null, mac: string, chipName: string}>}
  */
 export async function prepareFlash(loader) {
   const chip = await loader.runStub();
@@ -94,10 +94,16 @@ export async function prepareFlash(loader) {
   const mac = await target.readMac(loader);
   return {
     flashId,
-    flashSize: 1 << ((flashId >> 16) & 0xff),
+    flashSize: flashSizeFromId(flashId),
     mac: String(mac),
     chipName: target.CHIP_NAME,
   };
+}
+
+/** Decode a JEDEC capacity byte without JavaScript's wrapping 32-bit shifts. */
+export function flashSizeFromId(flashId) {
+  const capacity = (flashId >>> 16) & 0xff;
+  return capacity < 32 ? 2 ** capacity : null;
 }
 
 /**

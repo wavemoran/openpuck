@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  holdPower, isButtonHeld, openLoader, prepareFlash, resetToApp, safeDisconnect,
+  flashSizeFromId, holdPower, isButtonHeld, openLoader, prepareFlash, resetToApp, safeDisconnect,
   waitForButtonRelease, waitForPuck,
 } from "../js/device.js";
 
@@ -70,6 +70,14 @@ test("prepareFlash runs the stub, attaches flash and reads id and MAC", async ()
   // Falls back to the chip returned by runStub.
   const info2 = await prepareFlash({ runStub: async () => chip, flashSpiAttach: async () => {}, readFlashId: async () => 0x174020 });
   assert.equal(info2.flashSize, 8 * 1024 * 1024);
+});
+
+test("flashSizeFromId does not wrap large JEDEC capacity bytes", () => {
+  assert.equal(flashSizeFromId(0x164046), 4 * 1024 * 1024);
+  assert.equal(flashSizeFromId(0x174020), 8 * 1024 * 1024);
+  assert.equal(flashSizeFromId(0x204020), null);
+  assert.equal(flashSizeFromId(0x364046), null);
+  assert.equal(flashSizeFromId(0xffffff), null);
 });
 
 test("resetToApp pulses RTS with DTR low, in order", async () => {

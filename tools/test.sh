@@ -15,6 +15,7 @@ cmake -S test/host -B "$BUILD" -DCOVERAGE=$coverage > /dev/null
 cmake --build "$BUILD" --parallel
 find "$BUILD" -name '*.gcda' -delete
 ctest --test-dir "$BUILD" --output-on-failure
+python3 test/test_flash_tool.py
 
 [ "$coverage" = OFF ] && exit 0
 

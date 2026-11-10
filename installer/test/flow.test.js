@@ -52,6 +52,7 @@ function makeWorld(options = {}) {
     waitForPuckImpl,
     fetchImpl,
   } = options;
+  const flashSize = options.flashSize ?? FLASH_SIZE;
   const log = [];
   const opens = [...openResults];
   const heldStates = [...held];
@@ -94,7 +95,7 @@ function makeWorld(options = {}) {
     },
     safeDisconnect: async (t) => { log.push(["safeDisconnect", t.id]); },
     resetToApp: async (t) => { log.push(["resetToApp", t.id]); if (options.resetThrows) throw new Error("reset failed"); },
-    prepareFlash: async (l) => { log.push(["prepareFlash", l.id]); return { flashId, mac: "aa:bb:cc:dd:ee:ff", flashSize: FLASH_SIZE }; },
+    prepareFlash: async (l) => { log.push(["prepareFlash", l.id]); return { flashId, mac: "aa:bb:cc:dd:ee:ff", flashSize }; },
     readFlashVerified: async (l, addr, size, o) => {
       log.push(["read", addr, size]);
       o.onProgress(size, size);
@@ -227,13 +228,21 @@ test("a changed partition table clears the new data partitions first, after the 
   assert.equal(last(w.log, "done").layoutChanged, true);
 });
 
-test("wrong flash ID: nothing is read or written, the puck is reset, error shown", async () => {
-  const w = makeWorld({ flashId: 0x1640c8 });
+test("a different 4 MB flash manufacturer is accepted", async () => {
+  const w = makeWorld({ flashId: 0x164046 });
+  const r = await runInstall({ ui: w.ui, deps: w.deps });
+  assert.equal(r.ok, true);
+  assert.equal(count(w.log, "read"), 1);
+  assert.equal(count(w.log, "write"), 3);
+});
+
+test("wrong flash capacity: nothing is read or written, the puck is reset, error shown", async () => {
+  const w = makeWorld({ flashId: 0x1740c8 });
   const r = await runInstall({ ui: w.ui, deps: w.deps });
   assert.equal(r.ok, false);
   assert.equal(r.writeStarted, false);
   assert.equal(r.resume, null);
-  assert.match(r.error.message, /unexpected flash chip \(ID 0x1640c8/);
+  assert.match(r.error.message, /unexpected flash chip \(ID 0x1740c8\)/);
   assert.equal(count(w.log, "read"), 0);
   assert.equal(count(w.log, "write"), 0);
   assert.equal(count(w.log, "saveBackup"), 0);
@@ -242,6 +251,17 @@ test("wrong flash ID: nothing is read or written, the puck is reset, error shown
   assert.equal(e.writeStarted, false);
   assert.equal(e.canRetry, true);
   assert.equal(e.dontUnplug, false);
+});
+
+test("invalid flash ID bytes are rejected before reads or writes", async () => {
+  for (const flashId of [0xffffff, 0x000000, 0x16ffff, 0x160000, 0x364046]) {
+    const w = makeWorld({ flashId });
+    const r = await runInstall({ ui: w.ui, deps: w.deps });
+    assert.equal(r.ok, false, flashId.toString(16));
+    assert.match(r.error.message, new RegExp(`unexpected flash chip \\(ID 0x${flashId.toString(16)}\\)`));
+    assert.equal(count(w.log, "read"), 0);
+    assert.equal(count(w.log, "write"), 0);
+  }
 });
 
 test("a bad backup (checkBackup fails): nothing is saved or written", async () => {
@@ -364,7 +384,7 @@ test("restore writes the whole 4 MiB at 0, then resets", async () => {
   assert.equal(last(w.log, "done").kind, "restore");
 });
 
-test("restore stops without writing on the wrong flash ID", async () => {
+test("restore stops without writing on an invalid flash ID", async () => {
   const w = makeWorld({ flashId: 0xffffff });
   const r = await runRestore(backupWith(OLD_TABLE), { ui: w.ui, deps: w.deps });
   assert.equal(r.ok, false);
