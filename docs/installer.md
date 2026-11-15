@@ -128,8 +128,30 @@ the verified read needs, including timeouts, `drainInput` and abort support.
 
 esptool-js `loader.after("hard_reset")` never raises RTS in 0.7.0, so
 `resetToApp` does it directly on the transport: `setDTR(false)`,
-`setRTS(true)`, 200 ms, `setRTS(false)`, 200 ms. This boots the app. OpenPuck
-then holds the latch and starts by itself.
+`setRTS(true)`, 200 ms, `setRTS(false)`, 200 ms. This boots the app.
+
+### The power latch hold
+
+OpenPuck turns on the GPIO7 pad hold (`gpio_hold_en`, bit 7 of
+`RTC_CNTL_DIG_PAD_HOLD_REG` at `0x600080D4`). The hold keeps the latch driven
+through chip resets. Only a loss of power, or clearing the bit, removes it. The
+original software never sets it. So before the final reset, `finishUp` sets
+the hold for an install and clears it for a restore (`setLatchHold`), while
+`holdPower` still drives the latch high:
+
+- **Install:** the puck stays powered through the reset and OpenPuck starts by
+  itself, even when the install started from the original software.
+- **Restore:** without this, a restore started from OpenPuck left the hold set.
+  The original software then couldn't switch the puck off until the battery
+  ran flat. With the hold cleared, the reset powers the puck off and the user
+  presses the power button.
+
+The final reset can't fail the flow. Everything is written and checked by then.
+When the puck loses power during the reset, it drops off USB before the pulse
+ends and the next `setSignals` fails ("Failed to set control signals" in Chrome
+on Windows, "Port is not open" in Firefox). The flow logs the reason with the
+done step and shows the done screen (issue #5). `tools/flash.py` sets and
+clears the hold the same way.
 
 ## Browser behavior it relies on and works around
 

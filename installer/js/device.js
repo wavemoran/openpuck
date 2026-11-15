@@ -2,7 +2,7 @@
 import { ESPLoader } from "../vendor/esptool-js/bundle.js";
 import { RobustTransport, sleep, withTimeout, abortError, throwIfAborted } from "./transport.js";
 import {
-  BAUD_RATE, BUTTON_PIN, BUTTON_POLL_MS, BUTTON_RELEASE_TIMEOUT_MS, DISCONNECT_TIMEOUT_MS,
+  BAUD_RATE, BUTTON_PIN, DIG_PAD_HOLD_REG, BUTTON_POLL_MS, BUTTON_RELEASE_TIMEOUT_MS, DISCONNECT_TIMEOUT_MS,
   FUN_IE, GPIO_ENABLE_W1TS, GPIO_FUNC0_OUT_SEL, GPIO_IN, GPIO_OUT_W1TS, IO_MUX_GPIO0,
   LATCH_PIN, MCU_SEL_GPIO, MCU_SEL_MASK, OUT_SEL_SIMPLE_GPIO, RESET_PULSE_MS,
   SERIAL_BUFFER_SIZE, USB_PID, USB_VID,
@@ -51,6 +51,20 @@ export async function holdPower(loader) {
   await loader.writeReg(GPIO_OUT_W1TS, (1 << LATCH_PIN) >>> 0);
   await loader.writeReg(GPIO_ENABLE_W1TS, (1 << LATCH_PIN) >>> 0);
   await setPinAsGpio(loader, BUTTON_PIN, true);
+}
+
+/**
+ * Turn the power latch pad hold on or off (ESP-IDF gpio_hold_en / gpio_hold_dis). The hold
+ * keeps the latch driven through a chip reset, and only a loss of power clears it otherwise.
+ * Call it while holdPower drives the latch high. On: the final reset restarts the puck
+ * instead of switching it off. Off: the restored original software can switch it off again.
+ * @param {object} loader
+ * @param {boolean} on
+ */
+export async function setLatchHold(loader, on) {
+  const mask = (1 << LATCH_PIN) >>> 0;
+  const value = (await loader.readReg(DIG_PAD_HOLD_REG)) >>> 0;
+  await loader.writeReg(DIG_PAD_HOLD_REG, (on ? value | mask : value & ~mask) >>> 0);
 }
 
 /**

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   flashSizeFromId, holdPower, isButtonHeld, openLoader, prepareFlash, resetToApp, safeDisconnect,
+  setLatchHold,
   waitForButtonRelease, waitForPuck,
 } from "../js/device.js";
 
@@ -26,6 +27,17 @@ test("holdPower follows the flash.py register sequence", async () => {
     ["w", 0x60004024, 0x80],                            // GPIO_ENABLE_W1TS bit 7
     ["r", 0x6000902c], ["w", 0x6000902c, 0x1200],       // pin 10: MCU_SEL = GPIO + input enable
   ]);
+});
+
+test("setLatchHold sets and clears only bit 7 of RTC_CNTL_DIG_PAD_HOLD_REG", async () => {
+  const loader = fakeRegs({ 0x600080d4: 0x00000105 });
+  await setLatchHold(loader, true);
+  assert.deepEqual(loader.log, [["r", 0x600080d4], ["w", 0x600080d4, 0x00000185]]);
+  await setLatchHold(loader, false);
+  assert.equal(loader.regs.get(0x600080d4), 0x00000105);
+  const high = fakeRegs({ 0x600080d4: 0x80000080 }); // no sign trouble with bit 31
+  await setLatchHold(high, false);
+  assert.equal(high.regs.get(0x600080d4), 0x80000000);
 });
 
 test("isButtonHeld reads bit 10 of GPIO_IN", async () => {
