@@ -77,6 +77,45 @@ class FlashToolTest(unittest.TestCase):
         finish.assert_called_once_with(self.esp)
         self.flash.read_flash.assert_not_called()
 
+    def test_set_latch_hold_changes_only_bit_7(self):
+        regs = {0x600080D4: 0x80000105}
+        esp = mock.Mock()
+        esp.read_reg.side_effect = lambda a: regs[a]
+        esp.write_reg.side_effect = lambda a, v: regs.__setitem__(a, v)
+        self.flash.set_latch_hold(esp, True)
+        self.assertEqual(regs[0x600080D4], 0x80000185)
+        self.flash.set_latch_hold(esp, False)
+        self.assertEqual(regs[0x600080D4], 0x80000105)
+
+    def test_finish_sets_the_hold_before_the_reset(self):
+        calls = []
+        with mock.patch.object(self.flash, "set_latch_hold",
+                               side_effect=lambda esp, on: calls.append(("hold", on))), \
+                mock.patch.object(self.flash, "reset_chip",
+                                  side_effect=lambda esp, how: calls.append(("reset", how))):
+            self.flash.finish(self.esp, latch_hold=True)
+            self.flash.finish(self.esp, latch_hold=False)
+            self.flash.finish(self.esp)
+        self.assertEqual(calls, [("hold", True), ("reset", "hard-reset"),
+                                 ("hold", False), ("reset", "hard-reset"),
+                                 ("reset", "hard-reset")])
+
+    def test_flash_and_restore_choose_the_hold(self):
+        image = bytes([0xE9]) + bytes(0x8000 - 1) + b"\xaa\x50" + bytes(self.flash.FLASH_SIZE - 0x8002)
+        esp = FakeEsp(0x164020)
+        self.flash.run_stub.return_value = esp
+        with mock.patch.object(self.flash, "connect", return_value=esp), \
+                mock.patch.object(self.flash, "check_image", return_value=image), \
+                mock.patch.object(self.flash, "finish") as finish:
+            self.flash.cmd_restore(Namespace(image="backup.bin"))
+            finish.assert_called_once_with(esp, latch_hold=False)
+            finish.reset_mock()
+            with mock.patch.object(self.flash, "build_images", return_value=[(0x8000, "pt.bin")]), \
+                    mock.patch("builtins.open", mock.mock_open(read_data=b"\xaa\x50")):
+                self.flash.read_flash.return_value = b"\xaa\x50"
+                self.flash.cmd_flash(Namespace(backup="backup.bin", build="build"))
+            finish.assert_called_once_with(esp, latch_hold=True)
+
 
 if __name__ == "__main__":
     unittest.main()
