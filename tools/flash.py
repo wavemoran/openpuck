@@ -35,6 +35,7 @@ GPIO_IN = 0x6000403C
 GPIO_FUNC0_OUT_SEL = 0x60004554       # + 4*n
 MCU_SEL_GPIO, FUN_IE = 1 << 12, 1 << 9
 OUT_SEL_SIMPLE_GPIO = 0x80
+DIG_PAD_HOLD_REG = 0x600080D4         # RTC_CNTL_DIG_PAD_HOLD_REG: bit n holds GPIOn
 
 PARTITION_TABLE_OFFSET = 0x8000
 DEFAULT_BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "build")
@@ -193,7 +194,20 @@ def build_images(build_dir):
     return images
 
 
-def finish(esp):
+def set_latch_hold(esp, on):
+    """Turn the latch pad hold (gpio_hold_en) on or off. It survives chip resets.
+
+    On: the reset restarts the puck instead of switching it off. Off: restored
+    factory firmware can switch the puck off again.
+    """
+    value = esp.read_reg(DIG_PAD_HOLD_REG)
+    mask = 1 << LATCH_PIN
+    esp.write_reg(DIG_PAD_HOLD_REG, (value | mask) if on else (value & ~mask & 0xFFFFFFFF))
+
+
+def finish(esp, latch_hold=None):
+    if latch_hold is not None:
+        set_latch_hold(esp, latch_hold)
     reset_chip(esp, "hard-reset")
     say("Done")
     print("The puck has been reset. If it stays off, press the power button.")
@@ -234,7 +248,7 @@ def cmd_flash(args):
             erase_region(esp, offset, size)
     write_flash(esp, images)
     verify_flash(esp, images)
-    finish(esp)
+    finish(esp, latch_hold=True)
 
 
 def cmd_restore(args):
@@ -243,7 +257,7 @@ def cmd_restore(args):
     images = [(0, args.image)]
     write_flash(esp, images)
     verify_flash(esp, images)
-    finish(esp)
+    finish(esp, latch_hold=False)
 
 
 def main():

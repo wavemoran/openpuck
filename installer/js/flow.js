@@ -11,14 +11,14 @@
 //   await ui.confirmBackupSaved()         resolves when the user confirms the backup is saved
 //
 // deps interface (see defaultDeps): fetchFirmware, requestPort, openLoader, holdPower,
-//   isButtonHeld, waitForButtonRelease, waitForPuck, safeDisconnect, resetToApp, prepareFlash,
-//   readFlashVerified, writeImagesVerified, sha256Hex, sleep.
+//   isButtonHeld, waitForButtonRelease, waitForPuck, safeDisconnect, resetToApp, setLatchHold,
+//   prepareFlash, readFlashVerified, writeImagesVerified, sha256Hex, sleep.
 import {
   BUTTON_RELEASE_TIMEOUT_MS, BUTTON_SETTLE_MS, FLASH_SIZE,
   PUCK_SETTLE_MS, PUCK_WAIT_TIMEOUT_MS,
 } from "./constants.js";
 import {
-  holdPower, isButtonHeld, openLoader, prepareFlash, resetToApp, safeDisconnect,
+  holdPower, isButtonHeld, openLoader, prepareFlash, resetToApp, safeDisconnect, setLatchHold,
   waitForButtonRelease, waitForPuck,
 } from "./device.js";
 import { readFlashVerified, writeImagesVerified } from "./flashio.js";
@@ -44,6 +44,7 @@ export function defaultDeps({ serial, requestPort, fetch = globalThis.fetch?.bin
     waitForPuck: ({ timeoutMs, signal }) => waitForPuck({ serial, timeoutMs, signal }),
     safeDisconnect,
     resetToApp,
+    setLatchHold,
     prepareFlash,
     readFlashVerified,
     writeImagesVerified,
@@ -121,21 +122,30 @@ async function executeSteps({ steps, session, ui, deps, signal }) {
   }
 }
 
-async function finishUp({ session, ui, deps, details }) {
+// Restart the puck after a verified write. `latchHold` decides what the restart does:
+// true keeps the power latch held, so OpenPuck starts by itself; false clears the hold
+// OpenPuck leaves behind, so the restored original software can switch the puck off
+// (the puck switches off at the reset and the user presses the power button).
+async function finishUp({ session, ui, deps, details, latchHold }) {
   ui.show("finishing", {});
-  let note = null;
+  const notes = [];
+  const why = (e) => (e && e.message ? e.message : String(e));
+  try {
+    await deps.setLatchHold(session.conn.loader, latchHold);
+  } catch (e) {
+    notes.push(`couldn't ${latchHold ? "set" : "clear"} the power latch hold: ${why(e)}`);
+  }
   try {
     await deps.resetToApp(session.conn.transport);
   } catch (e) {
-    // Everything is written and checked, so this is not a failure. When the install
-    // started from the original software nothing holds the power latch through the
-    // reset: the puck loses power and drops off USB before the reset pulse ends.
-    note = `the puck disconnected while restarting: ${e && e.message ? e.message : String(e)}`;
+    // Everything is written and checked, so this is not a failure. Without the hold the
+    // reset powers the puck off, and it drops off USB before the reset pulse ends.
+    notes.push(`the puck disconnected while restarting: ${why(e)}`);
   }
   await deps.safeDisconnect(session.conn.transport);
   session.conn = null;
   ui.cue("done");
-  ui.show("done", note ? { ...details, message: note } : details);
+  ui.show("done", notes.length ? { ...details, message: notes.join("; ") } : details);
 }
 
 // Report a failure. Before any write the puck is reset so it returns to normal.
@@ -181,7 +191,10 @@ export async function runInstall({ ui, deps, signal, now = () => new Date() }) {
   const rest = async () => {
     try {
       await executeSteps({ steps, session, ui, deps, signal });
-      await finishUp({ session, ui, deps, details: { kind: "install", ...doneInfo, startsByItself: true } });
+      await finishUp({
+        session, ui, deps, latchHold: true,
+        details: { kind: "install", ...doneInfo, startsByItself: true },
+      });
       return { ok: true, ...doneInfo };
     } catch (e) {
       return fail(e, { session, ui, deps, resume: rest });
@@ -239,7 +252,7 @@ export async function runRestore(fileBytes, { ui, deps, signal }) {
     try {
       await executeSteps({ steps, session, ui, deps, signal });
       await finishUp({
-        session, ui, deps,
+        session, ui, deps, latchHold: false,
         details: { kind: "restore", hint: "If the puck stays off, press the power button." },
       });
       return { ok: true };

@@ -29,6 +29,8 @@ export const MCU_SEL_GPIO = 1 << 12;
 export const MCU_SEL_MASK = 0x7 << 12;
 export const FUN_IE = 1 << 9;
 export const OUT_SEL_SIMPLE_GPIO = 0x80;
+/** RTC_CNTL_DIG_PAD_HOLD_REG: bit n holds GPIOn's pad state through chip resets (gpio_hold_en). */
+export const DIG_PAD_HOLD_REG = 0x600080d4;
 
 /** Serial buffer size; Chrome overflows with the 255 byte default. */
 export const SERIAL_BUFFER_SIZE = 1048576;
