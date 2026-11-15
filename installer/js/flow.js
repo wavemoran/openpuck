@@ -123,11 +123,19 @@ async function executeSteps({ steps, session, ui, deps, signal }) {
 
 async function finishUp({ session, ui, deps, details }) {
   ui.show("finishing", {});
-  await deps.resetToApp(session.conn.transport);
+  let note = null;
+  try {
+    await deps.resetToApp(session.conn.transport);
+  } catch (e) {
+    // Everything is written and checked, so this is not a failure. When the install
+    // started from the original software nothing holds the power latch through the
+    // reset: the puck loses power and drops off USB before the reset pulse ends.
+    note = `the puck disconnected while restarting: ${e && e.message ? e.message : String(e)}`;
+  }
   await deps.safeDisconnect(session.conn.transport);
   session.conn = null;
   ui.cue("done");
-  ui.show("done", details);
+  ui.show("done", note ? { ...details, message: note } : details);
 }
 
 // Report a failure. Before any write the puck is reset so it returns to normal.

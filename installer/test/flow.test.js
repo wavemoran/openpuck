@@ -94,7 +94,7 @@ function makeWorld(options = {}) {
       return ports.second;
     },
     safeDisconnect: async (t) => { log.push(["safeDisconnect", t.id]); },
-    resetToApp: async (t) => { log.push(["resetToApp", t.id]); if (options.resetThrows) throw new Error("reset failed"); },
+    resetToApp: async (t) => { log.push(["resetToApp", t.id]); if (options.resetThrows) throw new Error(typeof options.resetThrows === "string" ? options.resetThrows : "reset failed"); },
     prepareFlash: async (l) => { log.push(["prepareFlash", l.id]); return { flashId, mac: "aa:bb:cc:dd:ee:ff", flashSize }; },
     readFlashVerified: async (l, addr, size, o) => {
       log.push(["read", addr, size]);
@@ -305,6 +305,42 @@ test("a reset that fails while reporting an error is ignored", async () => {
   const r = await runInstall({ ui: w.ui, deps: w.deps });
   assert.equal(r.ok, false);
   assert.equal(count(w.log, "safeDisconnect"), 1);
+});
+
+// Issue #5: starting from the original software, the final reset powers the puck off
+// and it drops off USB before resetToApp finishes. Everything is already written.
+for (const message of [
+  "Failed to execute 'setSignals' on 'SerialPort': Failed to set control signals.",
+  "Port is not open",
+]) {
+  test(`install: the puck dropping off USB during the final reset still finishes (${message})`, async () => {
+    const w = makeWorld({ openResults: [{ ok: false }, { ok: true }], resetThrows: message });
+    const r = await runInstall({ ui: w.ui, deps: w.deps });
+    assert.equal(r.ok, true);
+    assert.equal(count(w.log, "resetToApp"), 1);
+    assert.equal(count(w.log, "safeDisconnect"), 1);
+    assert.ok(!names(w.log).includes("show:error"));
+    assert.deepEqual(names(w.log).slice(-4), ["resetToApp", "safeDisconnect", "cue:done", "show:done"]);
+    const done = last(w.log, "done");
+    assert.equal(done.kind, "install");
+    assert.equal(done.startsByItself, true);
+    assert.ok(done.message.includes(message), "the reason is kept for the log");
+  });
+}
+
+test("restore: the puck dropping off USB during the final reset still finishes", async () => {
+  const w = makeWorld({ resetThrows: "Port is not open" });
+  const r = await runRestore(backupWith(OLD_TABLE), { ui: w.ui, deps: w.deps });
+  assert.equal(r.ok, true);
+  assert.equal(last(w.log, "done").kind, "restore");
+  assert.match(last(w.log, "done").hint, /press the power button/);
+});
+
+test("a clean final reset adds no message to the done screen", async () => {
+  const w = makeWorld();
+  const r = await runInstall({ ui: w.ui, deps: w.deps });
+  assert.equal(r.ok, true);
+  assert.equal(last(w.log, "done").message, undefined);
 });
 
 test("abort is reported as aborted", async () => {

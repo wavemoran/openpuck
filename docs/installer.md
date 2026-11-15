@@ -131,6 +131,15 @@ esptool-js `loader.after("hard_reset")` never raises RTS in 0.7.0, so
 `setRTS(true)`, 200 ms, `setRTS(false)`, 200 ms. This boots the app. OpenPuck
 then holds the latch and starts by itself.
 
+The final reset can't fail the install. Everything is written and checked by
+then. When the install started from the original software (button hold),
+nothing holds the latch through the reset (the OpenPuck firmware sets
+`gpio_hold_en` on it, the ROM loader doesn't). So the reset powers the puck off
+and it drops off USB before the pulse ends. The next `setSignals` then fails
+("Failed to set control signals" in Chrome on Windows, "Port is not open" in
+others). The flow logs the reason with the done step and shows the done screen,
+which says to press the power button if the screen stays dark (issue #5).
+
 ## Browser behavior it relies on and works around
 
 - **Hard reset.** See above. Fixed in our code, not by patching the vendored
