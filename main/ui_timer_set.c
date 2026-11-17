@@ -7,6 +7,7 @@
 
 #include "counter.h"
 #include "puck_settings.h"
+#include "ui_theme.h"
 
 LV_FONT_DECLARE(puck_font_count_80)
 
@@ -17,8 +18,10 @@ LV_FONT_DECLARE(puck_font_count_80)
 #define HINT_DY           84     // range hint near the bottom
 #define TITLE_TOP         14
 
-#define COLOR_BUTTON      lv_color_hex(0x3A3D42)
-#define COLOR_UNIT        lv_color_hex(0x9A9DA3)
+#define BUTTON_BORDER     2
+
+#define COLOR_BUTTON      UI_COLOR_PANEL
+#define COLOR_UNIT        UI_COLOR_MUTED
 
 static lv_obj_t *s_panel;
 static lv_obj_t *s_value;
@@ -70,6 +73,11 @@ static lv_obj_t *add_step_button(int direction, const char *symbol)
     lv_obj_align(btn, LV_ALIGN_CENTER, direction * BUTTON_DX, 0);
     lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(btn, COLOR_BUTTON, 0);
+    lv_obj_set_style_border_width(btn, BUTTON_BORDER, 0);
+    lv_obj_set_style_border_color(btn, UI_COLOR_VIOLET_LINE, 0);
+    lv_obj_set_style_border_opa(btn, LV_OPA_COVER, 0);
+    lv_obj_set_style_shadow_width(btn, 0, 0);
+    lv_obj_set_style_text_color(btn, UI_COLOR_BONE, 0);
     lv_obj_add_event_cb(btn, step_event, LV_EVENT_CLICKED, (void *)(intptr_t)direction);
     lv_obj_add_event_cb(btn, step_event, LV_EVENT_LONG_PRESSED, (void *)(intptr_t)direction);
     lv_obj_add_event_cb(btn, step_event, LV_EVENT_LONG_PRESSED_REPEAT, (void *)(intptr_t)direction);

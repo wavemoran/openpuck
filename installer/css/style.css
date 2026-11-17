@@ -93,7 +93,7 @@ input[type="file"] { max-width: 100%; font: inherit; }
 .visual { max-width: 200px; margin: 0 auto 24px; }
 .visual svg { width: 100%; height: auto; display: block; overflow: visible; }
 .body { fill: var(--puck-fill); stroke: var(--puck-line); stroke-width: 5; }
-.face { fill: none; stroke: var(--line); stroke-width: 4; }
+.side-label { fill: var(--muted); font-size: 16px; font-weight: 700; letter-spacing: 0.15em; }
 .ring { fill: none; stroke: var(--accent); stroke-width: 4; transform-box: fill-box; transform-origin: center; }
 .btn-pressed, .btn-up { fill: var(--accent); }
 .arrow { fill: none; stroke: var(--puck-line); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }

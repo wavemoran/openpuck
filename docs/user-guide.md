@@ -59,6 +59,8 @@ A new game starts at 0.
 at the top for about a second and a half. It adds up your quick taps, so you
 can see how much you gained or lost in one go. When it goes away, the next tap
 starts a new count. (While it shows, it takes the place of the battery icon.)
+On the default black background it shows in **amber**, for adds and subtracts
+alike; on a colored background it uses your text color.
 
 ![A running change of +2 above the number](images/counter-1p-change.png)
 
@@ -95,7 +97,8 @@ In a two player game the screen is split into two halves, one for each player.
 - Tap for 1. Press and hold for 5, and keep holding to keep going.
 - Each player has their own number, running change, tap flash and underline.
   Each number stays between 0 and 99.
-- The **timer** and the **battery** sit on the line between the two halves.
+- The **timer** and the **battery** sit on the thin amber line between the
+  two halves.
   When the timer is showing, the battery shows its icon only, even if you
   chose "Icon + %".
 
@@ -180,9 +183,11 @@ and on the line in the middle in a two player game.
   running (before you start it, or while it is paused).
 - Start and pause it from the menu, or with a short press of the power button.
 - When time runs out, it keeps going into **overtime**. It shows a plus sign
-  and counts up, such as `+0:42`, in **red**. (In a one player game on a
-  colored background, the time stays in your text color so it is easy to read,
-  but the plus sign still shows.)
+  and counts up, such as `+0:42`, in **orange-red**, with an outline to match.
+  (In a one player game on a colored background, the time stays in your text
+  color so it is easy to read, but the plus sign still shows.)
+
+  ![The timer in overtime, +0:42 in orange-red](images/counter-1p-overtime.png)
 - **Auto-off is held back while the timer runs**, so the puck does not switch
   off in the middle of a game. When you pause the timer, the idle countdown
   starts again.
@@ -205,9 +210,12 @@ recent 100.
   last) are **combined** into one row. So five quick taps of +1 show as one
   "+5" row. If they cancel each other out, the row disappears.
 - In a two player game, each row starts with **P1** or **P2**.
-- Rows use each player's colors. On the default black background, P1 is light
-  blue, P2 is amber, adds are green and subtracts are red. On a colored
-  background, the row uses that player's own colors.
+- Rows use each player's colors. On the default black background, rows are
+  dark panels where P1 is light blue, P2 is violet, adds are green and
+  subtracts are red. On a colored background, the row uses that player's own
+  colors.
+
+  ![History on the default black background](images/history-default-colors.png)
 - With no changes, it says "No changes yet".
 - **Tap anywhere** (or tap Done at the bottom of the list) to close it.
   Scrolling does not close it. The power button also closes it.

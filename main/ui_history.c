@@ -6,17 +6,20 @@
 
 #include "counter.h"
 #include "puck_color.h"
+#include "ui_theme.h"
 
 #define LIST_TOP        40   // below the title
 #define LIST_WIDTH      170   // the circle is ~178 px wide at the top of the list
 #define LIST_PAD_TOP    8
 #define LIST_PAD_BOTTOM 50   // lets the Done button scroll into the wide middle
 #define ROW_GAP         6
-#define ROW_RADIUS      10
+#define ROW_RADIUS      10   // rows in a player's colors
 #define ROW_PAD         4
+#define PLAIN_RADIUS    3    // rows on the default background: Holotable panel
+#define PLAIN_BORDER    1    // inside ROW_PAD, so the row keeps its height
 
-#define PLAYER_1_COLOR  lv_color_hex(0x4FC3F7)   // light blue
-#define PLAYER_2_COLOR  lv_color_hex(0xFFB74D)   // amber
+#define PLAYER_1_COLOR  UI_COLOR_P1_HISTORY   // light blue
+#define PLAYER_2_COLOR  UI_COLOR_P2_HISTORY   // violet
 
 static lv_obj_t *s_panel;
 
@@ -56,11 +59,20 @@ static void add_entry(lv_obj_t *list, const puck_history_entry_t *entry, bool tw
     const uint32_t background = settings->player_background[entry->player];
     const uint32_t text_color = settings->player_text[entry->player];
     const bool plain = background == PUCK_COLOR_BLACK;
-    lv_obj_set_style_radius(row, ROW_RADIUS, 0);
-    lv_obj_set_style_pad_all(row, ROW_PAD, 0);
-    lv_obj_set_style_bg_color(row, lv_color_hex(background), 0);
+    if (plain) {
+        lv_obj_set_style_radius(row, PLAIN_RADIUS, 0);
+        lv_obj_set_style_border_width(row, PLAIN_BORDER, 0);
+        lv_obj_set_style_border_color(row, UI_COLOR_LINE, 0);
+        lv_obj_set_style_border_opa(row, LV_OPA_COVER, 0);
+        lv_obj_set_style_pad_all(row, ROW_PAD - PLAIN_BORDER, 0);
+        lv_obj_set_style_bg_color(row, UI_COLOR_PANEL, 0);
+    } else {
+        lv_obj_set_style_radius(row, ROW_RADIUS, 0);
+        lv_obj_set_style_pad_all(row, ROW_PAD, 0);
+        lv_obj_set_style_bg_color(row, lv_color_hex(background), 0);
+    }
     lv_obj_set_style_bg_opa(row, LV_OPA_COVER, 0);
-    lv_obj_set_style_text_color(row, lv_color_hex(text_color), 0);
+    lv_obj_set_style_text_color(row, plain ? UI_COLOR_BONE : lv_color_hex(text_color), 0);
 
     char text[16];
     if (two_players) {
@@ -87,6 +99,7 @@ void ui_history_open(void)
     }
     s_panel = ui_panel_create("History");
     lv_obj_add_event_cb(s_panel, done_event, LV_EVENT_CLICKED, NULL);
+    ui_panel_add_underline(s_panel);
 
     lv_obj_t *list = lv_obj_create(s_panel);
     lv_obj_remove_style_all(list);
@@ -106,7 +119,7 @@ void ui_history_open(void)
     const uint16_t count = puck_history_count(history);
     if (count == 0) {
         lv_obj_t *empty = ui_add_label(list, &lv_font_montserrat_20, "No changes yet");
-        lv_obj_set_style_text_color(empty, lv_palette_main(LV_PALETTE_GREY), 0);
+        lv_obj_set_style_text_color(empty, UI_COLOR_MUTED, 0);
     }
     for (uint16_t i = 0; i < count; i++) {
         add_entry(list, puck_history_get(history, i), two_players);

@@ -39,14 +39,16 @@ function svg(markup) {
   return wrap;
 }
 
-// A round puck seen from above with its power button on the right edge.
-const PUCK_BODY = `<circle class="body" cx="100" cy="100" r="78"/><circle class="face" cx="100" cy="100" r="56"/>`;
-const HOLD_SVG = `<svg viewBox="0 0 200 200" role="img" focusable="false">${PUCK_BODY}
-  <circle class="ring pulse" cx="176" cy="100" r="14"/><rect class="btn-pressed" x="172" y="90" width="8" height="20" rx="3"/>
-  <path class="arrow" d="M206 100 L190 100 M198 92 L190 100 L198 108"/></svg>`;
-const RELEASE_SVG = `<svg viewBox="0 0 200 200" role="img" focusable="false">${PUCK_BODY}
-  <rect class="btn-up" x="174" y="90" width="8" height="20" rx="3"/>
-  <path class="arrow" d="M178 70 L178 50 M170 58 L178 50 L186 58 M178 130 L178 150 M170 142 L178 150 L186 142"/></svg>`;
+// The back of the puck (no screen on this side): the power button sits in the
+// middle horizontally and in the upper third vertically (body spans y 22-178,
+// the upper third is y 22-74; the button is centered at y 52).
+const PUCK_BACK = `<circle class="body" cx="100" cy="100" r="78"/><text class="side-label" x="100" y="138" text-anchor="middle">BACK</text>`;
+const HOLD_SVG = `<svg viewBox="0 0 200 200" role="img" focusable="false">${PUCK_BACK}
+  <circle class="ring pulse" cx="100" cy="52" r="15"/><circle class="btn-pressed" cx="100" cy="52" r="8"/>
+  <path class="arrow" d="M100 -12 L100 30 M92 22 L100 30 L108 22"/></svg>`;
+const RELEASE_SVG = `<svg viewBox="0 0 200 200" role="img" focusable="false">${PUCK_BACK}
+  <circle class="btn-up" cx="100" cy="52" r="8"/>
+  <path class="arrow" d="M100 32 L100 -8 M92 0 L100 -8 L108 0"/></svg>`;
 
 /** Format a byte count for display. */
 const fmtMB = (bytes) => `${(bytes / 1048576).toFixed(1)} MB`;
@@ -364,6 +366,7 @@ export function createView({ mode, refs, cues, bridge, handlers, setBusy }) {
       svg(HOLD_SVG),
       el("p", { class: "sound-row" }, soundButton(["Sound off", "Sound on"], "quiet sound-toggle")),
       para("The puck switched off when it connected. That is normal for the original software."),
+      para("The power button is on the back of the puck, in the middle, near the top."),
       para("Hold the button until this page tells you to let go."),
     ], { cancel: true, id: "hold" }),
     release: () => render("Release the button now", [

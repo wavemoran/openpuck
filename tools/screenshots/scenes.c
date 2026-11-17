@@ -158,6 +158,22 @@ static void scene_counter_1p_six(void)
     render_save("counter-1p-six");
 }
 
+// The timer run 42 s past its 55 minutes: the overtime look.
+static void scene_counter_1p_overtime(void)
+{
+    start_ui(false);
+    update_settings(battery_percent);
+    counter_adjust(0, 13, render_now());
+    counter_timer_toggle(render_now());
+    ui_refresh_counter();
+    render_advance(100);
+    render_jump(55 * 60 * 1000 + 42 * 1000);
+    render_advance(300);
+    check(counter_timer_running(), "timer running");
+    check(counter_game()->life[0] == 13, "1 player total");
+    render_save("counter-1p-overtime");
+}
+
 static void use_preset(int index, uint8_t player)
 {
     puck_settings_t settings = *counter_settings();
@@ -185,13 +201,16 @@ static void hold_player(uint8_t player, bool plus, uint32_t ms)
     touch_hold(x, y, ms, 2000);
 }
 
-// Two players: P1 (Blue) 20 -> 14 and P2 (Red) 20 -> 17 through taps and holds.
-static void two_players(void)
+// Two players: P1 20 -> 14 and P2 20 -> 17 through taps and holds, in Blue
+// and Red or (colored false) on the default black background.
+static void two_players_in(bool colored)
 {
     start_ui(false);
     counter_new_game(2, render_now());
-    use_preset(1, 0);   // Blue
-    use_preset(3, 1);   // Red
+    if (colored) {
+        use_preset(1, 0);   // Blue
+        use_preset(3, 1);   // Red
+    }
     ui_refresh_counter();
     render_advance(100);
     counter_adjust(0, 20, render_now());
@@ -208,6 +227,11 @@ static void two_players(void)
     check(counter_game()->life[0] == 14, "P1 total");
     check(counter_game()->life[1] == 17, "P2 total");
     check(puck_history_count(counter_history()) == 8, "history entries");
+}
+
+static void two_players(void)
+{
+    two_players_in(true);
 }
 
 static void scene_counter_2p(void)
@@ -267,6 +291,14 @@ static void scene_history(void)
     render_save("history");
 }
 
+static void scene_history_default_colors(void)
+{
+    two_players_in(false);
+    open_menu();
+    touch_tap(Q_BOTTOM_RIGHT, 300);
+    render_save("history-default-colors");
+}
+
 static void open_settings(void)
 {
     open_menu();
@@ -318,12 +350,14 @@ static const struct {
     { "counter-1p", scene_counter_1p },
     { "counter-1p-change", scene_counter_1p_change },
     { "counter-1p-six", scene_counter_1p_six },
+    { "counter-1p-overtime", scene_counter_1p_overtime },
     { "counter-2p", scene_counter_2p },
     { "menu", scene_menu },
     { "menu-new-game", scene_menu_new_game },
     { "menu-timer", scene_menu_timer },
     { "timer-set", scene_timer_set },
     { "history", scene_history },
+    { "history-default-colors", scene_history_default_colors },
     { "settings", scene_settings },
     { "colors", scene_colors },
     { "color-picker", scene_color_picker },

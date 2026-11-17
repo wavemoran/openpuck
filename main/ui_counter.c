@@ -11,6 +11,7 @@
 #include "puck_touch_input.h"
 #include "ui.h"
 #include "ui_internal.h"
+#include "ui_theme.h"
 
 LV_FONT_DECLARE(puck_font_count_185)
 LV_FONT_DECLARE(puck_font_count_80)
@@ -101,7 +102,7 @@ static lv_color_t text_of(uint8_t player)
 
 // Anything but a black background gets everything drawn in the player's text
 // color, so nothing is unreadable (green on green). A black background keeps
-// the default look (green/red changes, gray hints) whatever the text color.
+// the default look (amber changes, gray hints) whatever the text color.
 static bool is_custom(uint8_t player)
 {
     return background_of(player) != PUCK_COLOR_BLACK;
@@ -114,9 +115,14 @@ static bool chrome_custom(void)
     return s_built_players == 1 && is_custom(0);
 }
 
-static lv_color_t timer_color(bool red)
+static lv_color_t timer_color(bool overtime)
 {
-    return red ? lv_palette_main(LV_PALETTE_RED) : chrome_custom() ? text_of(0) : lv_color_white();
+    return overtime ? UI_COLOR_OVERTIME : chrome_custom() ? text_of(0) : lv_color_white();
+}
+
+static lv_color_t pill_border_color(bool overtime)
+{
+    return overtime ? UI_COLOR_OVERTIME : chrome_custom() ? text_of(0) : UI_COLOR_VIOLET_LINE;
 }
 
 static lv_color_t battery_color(bool red, bool charging)
@@ -146,11 +152,11 @@ static void apply_colors(void)
         }
     }
     const bool custom = chrome_custom();
-    lv_obj_set_style_border_color(s_timer_pill, custom ? text_of(0) : lv_color_hex(0x6E6E6E), 0);
     s_timer_red = false;
+    lv_obj_set_style_border_color(s_timer_pill, pill_border_color(false), 0);
     lv_obj_set_style_text_color(s_timer, timer_color(false), 0);
     lv_obj_set_style_text_color(s_timer_pause,
-        custom ? text_of(0) : lv_palette_lighten(LV_PALETTE_GREY, 2), 0);
+        custom ? text_of(0) : UI_COLOR_VIOLET, 0);
     s_battery_red = false;
     s_battery_charging = false;
     lv_obj_set_style_text_color(s_battery_icon, battery_color(false, false), 0);
@@ -241,9 +247,8 @@ static void apply(uint8_t player, int16_t delta)
     player_view_t *view = &s_view[player];
     const int32_t change = puck_change_tracker_add(&view->tracker, delta, now);
     lv_label_set_text_fmt(view->change, "%+d", (int)change);
-    lv_obj_set_style_text_color(view->change,
-        is_custom(player) ? text_of(player)
-                          : lv_palette_main(change >= 0 ? LV_PALETTE_GREEN : LV_PALETTE_RED), 0);
+    // Amber for both signs on the default background (the sign says which way).
+    lv_obj_set_style_text_color(view->change, is_custom(player) ? text_of(player) : UI_COLOR_AMBER, 0);
     lv_obj_set_hidden(view->change, false);
     update_battery();
     ui_tick_update(now);
@@ -319,7 +324,7 @@ static void add_timer_pill(int32_t dy, bool black_fill)
     lv_obj_set_height(s_timer_pill, PILL_HEIGHT);
     lv_obj_set_style_radius(s_timer_pill, PILL_HEIGHT / 2, 0);
     lv_obj_set_style_border_width(s_timer_pill, PILL_BORDER, 0);
-    lv_obj_set_style_border_color(s_timer_pill, lv_color_hex(0x6E6E6E), 0);
+    lv_obj_set_style_border_color(s_timer_pill, UI_COLOR_VIOLET_LINE, 0);
     lv_obj_set_style_pad_hor(s_timer_pill, PILL_PAD_HOR, 0);
     lv_obj_set_style_pad_column(s_timer_pill, PILL_ICON_GAP, 0);
     lv_obj_set_style_bg_color(s_timer_pill, lv_color_black(), 0);
@@ -327,7 +332,7 @@ static void add_timer_pill(int32_t dy, bool black_fill)
 
     s_timer = ui_add_label(s_timer_pill, &puck_font_timer_26, "");
     s_timer_pause = ui_add_label(s_timer_pill, &lv_font_montserrat_14, LV_SYMBOL_PAUSE);
-    lv_obj_set_style_text_color(s_timer_pause, lv_palette_lighten(LV_PALETTE_GREY, 2), 0);
+    lv_obj_set_style_text_color(s_timer_pause, UI_COLOR_VIOLET, 0);
 }
 
 // Battery symbol plus the percentage, as one centered group.
@@ -374,11 +379,12 @@ static void build_half(uint8_t player, bool flip)
 
 static void build_two_players(void)
 {
+    // The amber seam between the halves, behind the timer pill and battery.
     lv_obj_t *divider = lv_obj_create(s_root);
     lv_obj_remove_style_all(divider);
     lv_obj_set_clickable(divider, false);
     lv_obj_set_size(divider, LV_PCT(100), 2);
-    lv_obj_set_style_bg_color(divider, faint(), 0);
+    lv_obj_set_style_bg_color(divider, UI_COLOR_AMBER, 0);
     lv_obj_set_style_bg_opa(divider, LV_OPA_COVER, 0);
     lv_obj_align(divider, LV_ALIGN_CENTER, 0, 0);
 
@@ -480,6 +486,7 @@ static void update_timer(uint32_t now_ms)
     if (red != s_timer_red) {
         s_timer_red = red;
         lv_obj_set_style_text_color(s_timer, timer_color(red), 0);
+        lv_obj_set_style_border_color(s_timer_pill, pill_border_color(red), 0);
     }
 }
 

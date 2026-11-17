@@ -5,6 +5,7 @@
 #include "esp_system.h"
 #include "logo.h"
 #include "ui_internal.h"
+#include "ui_theme.h"
 
 #define TICK_FAST_MS         100   // a running change is visible or a tap flash is fading
 #define TICK_MEDIUM_MS       250   // game timer running or a save pending
@@ -17,6 +18,9 @@
 #define PANEL_TITLE_TOP      12   // history and settings: title distance from the top
 #define PANEL_DONE_WIDTH     120
 #define PANEL_BUTTON_HEIGHT  44
+#define PANEL_UNDERLINE_W    40
+#define PANEL_UNDERLINE_H    2
+#define PANEL_UNDERLINE_Y    36   // in the gap between the title (ends at 34) and the list (40)
 
 static lv_timer_t *s_tick_timer;
 static uint32_t s_tick_period_ms = TICK_FAST_MS;
@@ -58,7 +62,7 @@ lv_obj_t *ui_panel_create(const char *title)
     lv_obj_set_size(panel, LV_PCT(100), LV_PCT(100));
     lv_obj_set_style_bg_color(panel, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
-    lv_obj_set_style_text_color(panel, lv_color_white(), 0);
+    lv_obj_set_style_text_color(panel, UI_COLOR_BONE, 0);
     // Clickable so taps don't reach the counter underneath.
     lv_obj_set_clickable(panel, true);
     lv_obj_set_scrollable(panel, false);
@@ -67,9 +71,29 @@ lv_obj_t *ui_panel_create(const char *title)
     return panel;
 }
 
+void ui_panel_add_underline(lv_obj_t *panel)
+{
+    lv_obj_t *bar = lv_obj_create(panel);
+    lv_obj_remove_style_all(bar);
+    lv_obj_set_clickable(bar, false);
+    lv_obj_set_size(bar, PANEL_UNDERLINE_W, PANEL_UNDERLINE_H);
+    lv_obj_set_style_bg_color(bar, UI_COLOR_VIOLET, 0);
+    lv_obj_set_style_bg_opa(bar, LV_OPA_COVER, 0);
+    lv_obj_align(bar, LV_ALIGN_TOP_MID, 0, PANEL_UNDERLINE_Y);
+}
+
+void ui_style_button(lv_obj_t *btn)
+{
+    lv_obj_set_style_bg_color(btn, UI_COLOR_VIOLET, 0);
+    lv_obj_set_style_text_color(btn, UI_COLOR_VIOLET_INK, 0);
+    lv_obj_set_style_radius(btn, UI_BUTTON_RADIUS, 0);
+    lv_obj_set_style_shadow_width(btn, 0, 0);
+}
+
 lv_obj_t *ui_add_done_button(lv_obj_t *parent, lv_event_cb_t cb)
 {
     lv_obj_t *btn = lv_button_create(parent);
+    ui_style_button(btn);
     lv_obj_set_size(btn, PANEL_DONE_WIDTH, PANEL_BUTTON_HEIGHT);
     lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
     lv_obj_center(ui_add_label(btn, &lv_font_montserrat_20, "Done"));
