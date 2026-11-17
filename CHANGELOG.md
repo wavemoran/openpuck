@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/wavemoran/openpuck/compare/v0.2.1...v0.3.0) (2026-11-17)
+
+
+### Features
+
+* Holotable restyle and Split Duel logo ([#10](https://github.com/wavemoran/openpuck/issues/10)) ([5d214a8](https://github.com/wavemoran/openpuck/commit/5d214a887dcbf030e5641fb393552b9b4fce229e))
+
 ## [0.2.1](https://github.com/wavemoran/openpuck/compare/v0.2.0...v0.2.1) (2026-11-15)
 
 
