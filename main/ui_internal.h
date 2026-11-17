@@ -50,5 +50,9 @@ lv_obj_t *ui_add_label(lv_obj_t *parent, const lv_font_t *font, const char *text
 // Shared by the full-screen panels (ui.c): an opaque black panel on the top
 // layer that blocks touches, with the title at the top.
 lv_obj_t *ui_panel_create(const char *title);
+// A 40x2 violet bar centered under the panel title, in the gap above the list.
+void ui_panel_add_underline(lv_obj_t *panel);
+// The Holotable action button look: violet fill, dark ink text, radius 3.
+void ui_style_button(lv_obj_t *btn);
 // A "Done" button in parent that calls cb when clicked.
 lv_obj_t *ui_add_done_button(lv_obj_t *parent, lv_event_cb_t cb);

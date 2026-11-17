@@ -5,6 +5,7 @@
 #include "counter.h"
 #include "puck_color.h"
 #include "puck_touch_input.h"
+#include "ui_theme.h"
 
 LV_FONT_DECLARE(puck_font_small_32)
 
@@ -51,8 +52,13 @@ _Static_assert((CANCEL_W / 2) * (CANCEL_W / 2) + (CANCEL_DY + CANCEL_H / 2) * (C
                   <= (RING_TOUCH_R - 4) * (RING_TOUCH_R - 4),
               "Cancel must stay inside the hue band with 4 px margin");
 
-#define COLOR_OUTLINE      lv_color_hex(0x6E6E6E)
-#define COLOR_UNSELECTED   lv_color_hex(0x3A3D42)
+#define MATCH_RING_W       2      // violet ring around the preset in use...
+#define MATCH_RING_GAP     2      // ...this far outside it (fits the 56 px cell)
+#define PREVIEW_RING_W     2
+#define PREVIEW_RING_GAP   2
+#define KNOB_BORDER        2
+
+#define COLOR_OUTLINE      UI_COLOR_LINE_STRONG
 
 static lv_obj_t *s_panel;
 static lv_obj_t *s_player_btn[PUCK_MAX_PLAYERS];
@@ -83,15 +89,16 @@ static void update_marks(void)
     const puck_settings_t *settings = counter_settings();
     for (uint8_t i = 0; i < PUCK_MAX_PLAYERS; i++) {
         const bool selected = i == s_player;
-        lv_obj_set_style_bg_color(s_player_btn[i],
-            selected ? lv_palette_main(LV_PALETTE_BLUE) : COLOR_UNSELECTED, 0);
-        lv_obj_set_style_border_width(s_player_btn[i], selected ? 2 : 0, 0);
+        lv_obj_set_style_bg_color(s_player_btn[i], selected ? UI_COLOR_VIOLET : UI_COLOR_PANEL, 0);
+        lv_obj_set_style_text_color(s_player_btn[i], selected ? UI_COLOR_VIOLET_INK : UI_COLOR_BONE, 0);
+        lv_obj_set_style_border_width(s_player_btn[i], selected ? 0 : 1, 0);
     }
     for (int i = 0; i < PUCK_COLOR_PRESET_COUNT; i++) {
         const bool match = PUCK_COLOR_PRESETS[i].background == settings->player_background[s_player]
                         && PUCK_COLOR_PRESETS[i].text == settings->player_text[s_player];
-        lv_obj_set_style_border_width(s_preset_circle[i], match ? 2 : 1, 0);
-        lv_obj_set_style_border_color(s_preset_circle[i], match ? lv_color_white() : COLOR_OUTLINE, 0);
+        lv_obj_set_style_border_width(s_preset_circle[i], 1, 0);
+        lv_obj_set_style_border_color(s_preset_circle[i], COLOR_OUTLINE, 0);
+        lv_obj_set_style_outline_width(s_preset_circle[i], match ? MATCH_RING_W : 0, 0);
     }
 }
 
@@ -270,8 +277,10 @@ static void open_picker(bool background)
     lv_obj_align(s_preview, LV_ALIGN_CENTER, 0, PREVIEW_DY);
     lv_obj_set_style_radius(s_preview, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_opa(s_preview, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_width(s_preview, 1, 0);
-    lv_obj_set_style_border_color(s_preview, COLOR_OUTLINE, 0);
+    lv_obj_set_style_outline_width(s_preview, PREVIEW_RING_W, 0);
+    lv_obj_set_style_outline_pad(s_preview, PREVIEW_RING_GAP, 0);
+    lv_obj_set_style_outline_color(s_preview, UI_COLOR_VIOLET_LINE, 0);
+    lv_obj_set_style_outline_opa(s_preview, LV_OPA_COVER, 0);
     lv_obj_add_event_cb(s_preview, preview_event, LV_EVENT_CLICKED, NULL);
     s_preview_text = ui_add_label(s_preview, &puck_font_small_32, "20");
     lv_obj_center(s_preview_text);
@@ -289,9 +298,15 @@ static void open_picker(bool background)
     lv_obj_set_size(slider, SLIDER_W, SLIDER_H);
     lv_slider_set_range(slider, 0, 100);
     lv_slider_set_value(slider, s_tint, LV_ANIM_OFF);
+    lv_obj_set_style_bg_color(slider, UI_COLOR_VIOLET, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(slider, UI_COLOR_BONE, LV_PART_KNOB);
+    lv_obj_set_style_border_width(slider, KNOB_BORDER, LV_PART_KNOB);
+    lv_obj_set_style_border_color(slider, UI_COLOR_VIOLET, LV_PART_KNOB);
+    lv_obj_set_style_border_opa(slider, LV_OPA_COVER, LV_PART_KNOB);
     lv_obj_add_event_cb(slider, slider_event, LV_EVENT_VALUE_CHANGED, NULL);
 
     lv_obj_t *cancel = lv_button_create(s_picker);
+    ui_style_button(cancel);
     lv_obj_set_size(cancel, CANCEL_W, CANCEL_H);
     lv_obj_align(cancel, LV_ALIGN_CENTER, 0, CANCEL_DY);
     lv_obj_set_style_pad_all(cancel, 0, 0);
@@ -324,12 +339,28 @@ static void add_player_selector(lv_obj_t *list)
     lv_obj_set_style_pad_column(row, PLAYER_GAP, 0);
     for (uint8_t i = 0; i < PUCK_MAX_PLAYERS; i++) {
         lv_obj_t *btn = lv_button_create(row);
+        ui_style_button(btn);
         lv_obj_set_size(btn, PLAYER_BTN_W, PLAYER_BTN_H);
-        lv_obj_set_style_border_color(btn, lv_color_white(), 0);
+        lv_obj_set_style_border_color(btn, UI_COLOR_LINE_STRONG, 0);
+        lv_obj_set_style_border_opa(btn, LV_OPA_COVER, 0);
         lv_obj_add_event_cb(btn, player_event, LV_EVENT_CLICKED, (void *)(intptr_t)i);
         lv_obj_center(ui_add_label(btn, &lv_font_montserrat_20, i == 0 ? "P1" : "P2"));
         s_player_btn[i] = btn;
     }
+}
+
+static void match_ring_space(lv_event_t *e)
+{
+    lv_event_set_ext_draw_size(e, MATCH_RING_GAP + MATCH_RING_W);
+}
+
+// The match ring reaches past the cell's top and bottom into the row gap:
+// let the preset cell and its row draw (not lay out) that far outside.
+static void show_match_ring(lv_obj_t *obj)
+{
+    lv_obj_set_overflow_visible(obj, true);
+    lv_obj_add_event_cb(obj, match_ring_space, LV_EVENT_REFR_EXT_DRAW_SIZE, NULL);
+    lv_obj_refresh_ext_draw_size(obj);
 }
 
 static void add_preset(lv_obj_t *row, int index)
@@ -340,6 +371,8 @@ static void add_preset(lv_obj_t *row, int index)
     lv_obj_set_size(cell, PRESET_CELL_W, LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(cell, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cell, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    show_match_ring(cell);
+    show_match_ring(row);
     lv_obj_add_event_cb(cell, preset_event, LV_EVENT_CLICKED, (void *)(intptr_t)index);
 
     lv_obj_t *circle = lv_obj_create(cell);
@@ -350,6 +383,9 @@ static void add_preset(lv_obj_t *row, int index)
     lv_obj_set_style_bg_color(circle, lv_color_hex(preset->background), 0);
     lv_obj_set_style_bg_opa(circle, LV_OPA_COVER, 0);
     lv_obj_set_style_border_opa(circle, LV_OPA_COVER, 0);
+    lv_obj_set_style_outline_pad(circle, MATCH_RING_GAP, 0);
+    lv_obj_set_style_outline_color(circle, UI_COLOR_VIOLET, 0);
+    lv_obj_set_style_outline_opa(circle, LV_OPA_COVER, 0);
     lv_obj_t *sample = ui_add_label(circle, &puck_font_small_32, "20");
     lv_obj_set_style_text_color(sample, lv_color_hex(preset->text), 0);
     lv_obj_center(sample);
@@ -370,6 +406,7 @@ static void add_presets(lv_obj_t *list)
 static void add_custom_button(lv_obj_t *list, const char *text, bool background)
 {
     lv_obj_t *btn = lv_button_create(list);
+    ui_style_button(btn);
     lv_obj_set_size(btn, CUSTOM_W, CUSTOM_H);
     lv_obj_add_event_cb(btn, custom_event, LV_EVENT_CLICKED, (void *)(intptr_t)background);
     lv_obj_t *label = ui_add_label(btn, &lv_font_montserrat_20, text);

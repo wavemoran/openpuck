@@ -12,11 +12,12 @@
 #include "logo.h"
 #include "puck_touch_input.h"
 #include "ui_internal.h"
+#include "ui_theme.h"
 
 #define MENU_SIZE          240
 #define MENU_RADIUS        120
 #define MENU_LOGO_SIZE     56
-#define MENU_CENTER_RING   46    // radius of the Bone ring around the center
+#define MENU_CENTER_RING   46    // radius of the violet ring around the center
 #define MENU_RING_WIDTH    2
 #define MENU_LABEL_RADIUS  98    // label baseline circle
 #define MENU_LABEL_SPAN    80    // degrees available to one label (quadrants are 90)
@@ -24,8 +25,9 @@
 #define MENU_SEPARATOR_W   2
 
 #define MENU_COLOR_TEXT      LOGO_COLOR_RING          // Bone
-#define MENU_COLOR_SEPARATOR lv_color_hex(0x3A3D42)
-#define MENU_COLOR_PRESSED   lv_color_hex(0x2E3238)
+#define MENU_COLOR_SEPARATOR UI_COLOR_LINE_STRONG
+#define MENU_COLOR_PRESSED   UI_COLOR_VIOLET_PRESSED
+#define MENU_COLOR_RING      UI_COLOR_VIOLET_LINE
 
 #define ZONE_COUNT 5
 
@@ -350,7 +352,8 @@ static void show_menu(menu_action_t menu)
         lv_obj_set_flex_flow(box, LV_FLEX_FLOW_COLUMN);
         lv_obj_set_flex_align(box, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_set_style_text_color(box, MENU_COLOR_TEXT, 0);
-        ui_add_label(box, &lv_font_montserrat_20, LV_SYMBOL_LEFT);
+        lv_obj_t *chevron = ui_add_label(box, &lv_font_montserrat_20, LV_SYMBOL_LEFT);
+        lv_obj_set_style_text_color(chevron, UI_COLOR_VIOLET, 0);
         ui_add_label(box, &lv_font_montserrat_14, "Back");
         lv_obj_center(box);
     }
@@ -386,7 +389,7 @@ static void add_static_decor(void)
     lv_obj_set_size(ring, 2 * MENU_CENTER_RING, 2 * MENU_CENTER_RING);
     lv_obj_set_style_radius(ring, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_border_width(ring, MENU_RING_WIDTH, 0);
-    lv_obj_set_style_border_color(ring, MENU_COLOR_TEXT, 0);
+    lv_obj_set_style_border_color(ring, MENU_COLOR_RING, 0);
     lv_obj_set_style_border_opa(ring, LV_OPA_COVER, 0);
     lv_obj_center(ring);
 }

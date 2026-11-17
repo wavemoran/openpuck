@@ -6,6 +6,7 @@
 
 #include "counter.h"
 #include "esp_app_desc.h"
+#include "ui_theme.h"
 
 #define LIST_TOP        40   // below the title
 #define LIST_WIDTH      170   // the circle is ~178 px wide at the top of the list
@@ -155,6 +156,7 @@ static lv_obj_t *add_switch(lv_obj_t *list, const char *text, control_t control)
 {
     lv_obj_t *block = add_block(list, text);
     lv_obj_t *sw = lv_switch_create(block);
+    lv_obj_set_style_bg_color(sw, UI_COLOR_VIOLET, LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_add_event_cb(sw, control_event, LV_EVENT_VALUE_CHANGED, (void *)(intptr_t)control);
     return sw;
 }
@@ -162,6 +164,7 @@ static lv_obj_t *add_switch(lv_obj_t *list, const char *text, control_t control)
 static lv_obj_t *add_step_button(lv_obj_t *row, const char *text, control_t control)
 {
     lv_obj_t *btn = lv_button_create(row);
+    ui_style_button(btn);
     lv_obj_set_size(btn, STEP_BUTTON_W, STEP_BUTTON_H);
     lv_obj_add_event_cb(btn, control_event, LV_EVENT_CLICKED, (void *)(intptr_t)control);
     lv_obj_center(ui_add_label(btn, &lv_font_montserrat_20, text));
@@ -194,6 +197,7 @@ static lv_obj_t *add_choice(lv_obj_t *list, const char *text, control_t control,
 {
     lv_obj_t *block = add_block(list, text);
     lv_obj_t *btn = lv_button_create(block);
+    ui_style_button(btn);
     lv_obj_set_size(btn, CHOICE_W, CHOICE_H);
     lv_obj_add_event_cb(btn, control_event, LV_EVENT_CLICKED, (void *)(intptr_t)control);
     *value = ui_add_label(btn, &lv_font_montserrat_20, "");
@@ -231,6 +235,7 @@ static void colors_event(lv_event_t *e)
 static void add_colors_button(lv_obj_t *list)
 {
     lv_obj_t *btn = lv_button_create(list);
+    ui_style_button(btn);
     lv_obj_set_size(btn, COLORS_W, CHOICE_H);
     lv_obj_add_event_cb(btn, colors_event, LV_EVENT_CLICKED, NULL);
     lv_obj_center(ui_add_label(btn, &lv_font_montserrat_20, "Colors"));
@@ -242,6 +247,7 @@ void ui_settings_open(void)
         return;
     }
     s_panel = ui_panel_create("Settings");
+    ui_panel_add_underline(s_panel);
 
     lv_obj_t *list = lv_obj_create(s_panel);
     lv_obj_remove_style_all(list);
@@ -272,7 +278,7 @@ void ui_settings_open(void)
     char version[48];
     snprintf(version, sizeof(version), "OpenPuck v%s", esp_app_get_description()->version);
     lv_obj_t *version_label = ui_add_label(list, &lv_font_montserrat_14, version);
-    lv_obj_set_style_text_color(version_label, lv_color_hex(0x8A8D92), 0);
+    lv_obj_set_style_text_color(version_label, UI_COLOR_MUTED, 0);
 
     show_settings();
 }
