@@ -21,24 +21,51 @@ bool ui_counter_animating(uint32_t now_ms);
 // Forget the widgets before the screen is cleaned.
 void ui_counter_stop(void);
 
-// Menu (ui_menu.c)
+// Menu (ui_menu.c): the quadrant rings.
 void ui_menu_close(void);
+bool ui_menu_back(void);             // sub-ring to main ring; main or Custom ring closed
+void ui_menu_open_settings(void);    // the Settings ring (back from a dial or Colors)
+void ui_menu_open_custom(void);      // the Custom color ring, over the swatch ring
+void ui_menu_refresh(void);          // redraw the open ring's values
 
-// Full-screen panels opened from the menu (ui_history.c, ui_settings.c).
+// History (ui_history.c), opened from the main ring.
 void ui_history_open(void);
-void ui_settings_open(void);
-// "Close if open" functions, used by ui_back(). Each returns true if it closed
-// something. History and Settings also refresh the counter.
-bool ui_history_close(void);
-bool ui_settings_close(void);
-bool ui_timer_set_close(void);       // refreshes the counter
-bool ui_colors_close(void);       // back to Settings
-bool ui_colors_picker_close(void);   // back to Colors, nothing saved
-bool ui_menu_back(void);             // sub-ring to main ring, or main ring closed
-// The Colors screen opened from Settings (ui_colors.c).
-void ui_colors_open(void);
-// The Set timer page opened from the Timer menu (ui_timer_set.c).
+bool ui_history_close(void);         // refreshes the counter
+
+// The value dial (ui_dial.c): a big value between "-" and "+" with a rim arc.
+typedef struct {
+    char value[8];       // the big value: digits, or "Off"
+    char unit[16];       // the line under it
+    uint16_t permille;   // rim arc fill, 0-1000
+    bool at_min;         // "-" dimmed and ignored
+    bool at_max;         // "+" dimmed and ignored
+} ui_dial_state_t;
+typedef struct {
+    const char *title;
+    const char *range;               // the range line near the bottom
+    void (*read)(ui_dial_state_t *state);   // the current value
+    void (*step)(int dir);           // apply one step down (-1) or up (+1)
+    void (*closed)(void);            // after closing: where to go back to
+} ui_dial_t;
+void ui_dial_open(const ui_dial_t *dial);
+bool ui_dial_close(void);
+
+// The timer length dial, opened from the Timer ring (ui_timer_set.c).
 void ui_timer_set_open(void);
+
+// Settings ring actions (ui_settings.c).
+void ui_settings_open_brightness(void);
+void ui_settings_open_auto_off(void);
+void ui_settings_cycle_battery(void);    // Off -> Icon -> Icon + % -> Off
+const char *ui_settings_battery_text(uint8_t battery_display);
+
+// Colors (ui_colors.c): the swatch ring, opened from the Settings ring, and
+// the custom picker, opened from the Custom ring.
+void ui_colors_open(void);
+bool ui_colors_close(void);          // back to the Settings ring
+uint8_t ui_colors_player(void);      // the player being edited (0 = P1)
+void ui_colors_open_picker(bool background);
+bool ui_colors_picker_close(void);   // back to the Custom ring, nothing saved
 
 // Re-pick the UI tick period (ui.c): fast while animating, medium while the
 // game timer runs or a save is pending, slow otherwise (every wakeup costs

@@ -18,8 +18,9 @@
 #define PLAIN_RADIUS    3    // rows on the default background: Holotable panel
 #define PLAIN_BORDER    1    // inside ROW_PAD, so the row keeps its height
 
-#define PLAYER_1_COLOR  UI_COLOR_P1_HISTORY   // light blue
-#define PLAYER_2_COLOR  UI_COLOR_P2_HISTORY   // violet
+#define TAG_W           28   // solid P1/P2 tag on the default background
+#define TAG_H           16
+#define TAG_RADIUS      3
 
 static lv_obj_t *s_panel;
 
@@ -40,6 +41,27 @@ bool ui_history_close(void)
 static void done_event(lv_event_t *e)
 {
     ui_history_close();
+}
+
+// The player: a solid sky-blue (P1) or yellow (P2) tag on the default
+// background, plain text in the row's colors otherwise.
+static void add_player(lv_obj_t *row, uint8_t player, bool plain)
+{
+    const char *name = player == 0 ? "P1" : "P2";
+    if (!plain) {
+        ui_add_label(row, &lv_font_montserrat_20, name);
+        return;
+    }
+    lv_obj_t *tag = lv_obj_create(row);
+    lv_obj_remove_style_all(tag);
+    lv_obj_set_clickable(tag, false);
+    lv_obj_set_size(tag, TAG_W, TAG_H);
+    lv_obj_set_style_radius(tag, TAG_RADIUS, 0);
+    lv_obj_set_style_bg_color(tag, player == 0 ? UI_COLOR_P1_HISTORY : UI_COLOR_P2_HISTORY, 0);
+    lv_obj_set_style_bg_opa(tag, LV_OPA_COVER, 0);
+    lv_obj_t *text = ui_add_label(tag, &lv_font_montserrat_14, name);
+    lv_obj_set_style_text_color(text, player == 0 ? UI_COLOR_P1_HISTORY_INK : UI_COLOR_P2_HISTORY_INK, 0);
+    lv_obj_center(text);
 }
 
 static void add_entry(lv_obj_t *list, const puck_history_entry_t *entry, bool two_players)
@@ -76,10 +98,7 @@ static void add_entry(lv_obj_t *list, const puck_history_entry_t *entry, bool tw
 
     char text[16];
     if (two_players) {
-        lv_obj_t *player = ui_add_label(row, &lv_font_montserrat_20, entry->player == 0 ? "P1" : "P2");
-        if (plain) {
-            lv_obj_set_style_text_color(player, entry->player == 0 ? PLAYER_1_COLOR : PLAYER_2_COLOR, 0);
-        }
+        add_player(row, entry->player, plain);
     }
     snprintf(text, sizeof(text), "%+d", entry->delta);
     lv_obj_t *delta = ui_add_label(row, &lv_font_montserrat_28, text);

@@ -105,22 +105,6 @@ static void tap_label(const char *text, uint32_t settle_ms)
     touch_tap((area.x1 + area.x2) / 2, (area.y1 + area.y2) / 2, settle_ms);
 }
 
-// A vertical drag (scrolls a list) in 4 px steps.
-static void drag(int32_t x, int32_t y_from, int32_t y_to)
-{
-    touch_down(x, y_from);
-    render_advance(60);
-    const int32_t dir = y_to > y_from ? 1 : -1;
-    for (int32_t y = y_from; y != y_to; y += 4 * dir) {
-        touch_move(x, y);
-        render_advance(10);
-    }
-    touch_move(x, y_to);
-    render_advance(30);
-    touch_up();
-    render_advance(500);
-}
-
 static void open_menu(void)
 {
     touch_hold(CENTER, CENTER, 600, 300);
@@ -131,6 +115,11 @@ static void open_menu(void)
 #define Q_TOP_RIGHT    180, 60
 #define Q_BOTTOM_LEFT  60, 180
 #define Q_BOTTOM_RIGHT 180, 180
+// Halves of the two-zone Custom ring.
+#define H_TOP          CENTER, 40
+#define H_BOTTOM       CENTER, 200
+// The Custom swatch on the Colors ring (at 60 degrees, radius 94).
+#define SWATCH_CUSTOM  167, 201
 
 // ---- Scenes ----
 
@@ -257,8 +246,7 @@ static void scene_menu(void)
 
 static void scene_menu_new_game(void)
 {
-    start_ui(false);
-    one_player(20);
+    two_players_in(false);
     open_menu();
     touch_tap(Q_TOP_LEFT, 300);
     render_save("menu-new-game");
@@ -271,6 +259,21 @@ static void scene_menu_timer(void)
     open_menu();
     touch_tap(Q_TOP_RIGHT, 300);
     render_save("menu-timer");
+}
+
+static void timer_off(puck_settings_t *s)
+{
+    s->timer_enabled = false;
+}
+
+static void scene_menu_timer_off(void)
+{
+    start_ui(false);
+    one_player(20);
+    update_settings(timer_off);
+    open_menu();
+    touch_tap(Q_TOP_RIGHT, 300);
+    render_save("menu-timer-off");
 }
 
 static void scene_timer_set(void)
@@ -310,7 +313,41 @@ static void scene_settings(void)
     start_ui(false);
     one_player(20);
     open_settings();
+    check(find_label(lv_layer_top(), "v0.0.2") != NULL, "version under Back");
     render_save("settings");
+}
+
+static void scene_brightness(void)
+{
+    start_ui(false);
+    one_player(20);
+    open_settings();
+    touch_tap(Q_TOP_RIGHT, 300);
+    render_save("brightness");
+}
+
+static void scene_auto_off(void)
+{
+    start_ui(false);
+    one_player(20);
+    open_settings();
+    touch_tap(Q_BOTTOM_LEFT, 300);
+    render_save("auto-off");
+}
+
+static void auto_off_disabled(puck_settings_t *s)
+{
+    s->auto_off_enabled = false;
+}
+
+static void scene_auto_off_off(void)
+{
+    start_ui(false);
+    one_player(20);
+    update_settings(auto_off_disabled);
+    open_settings();
+    touch_tap(Q_BOTTOM_LEFT, 300);
+    render_save("auto-off-off");
 }
 
 static void scene_colors(void)
@@ -318,8 +355,29 @@ static void scene_colors(void)
     start_ui(false);
     one_player(20);
     open_settings();
-    tap_label("Colors", 300);
+    touch_tap(Q_TOP_LEFT, 300);
     render_save("colors");
+}
+
+static void scene_colors_2p(void)
+{
+    two_players();
+    open_settings();
+    touch_tap(Q_TOP_LEFT, 300);
+    render_save("colors-2p");
+}
+
+static void scene_colors_custom(void)
+{
+    start_ui(false);
+    one_player(20);
+    use_preset(1, 0);   // Blue
+    ui_refresh_counter();
+    render_advance(100);
+    open_settings();
+    touch_tap(Q_TOP_LEFT, 300);
+    touch_tap(SWATCH_CUSTOM, 300);
+    render_save("colors-custom");
 }
 
 static void scene_color_picker(void)
@@ -330,11 +388,25 @@ static void scene_color_picker(void)
     ui_refresh_counter();
     render_advance(100);
     open_settings();
-    tap_label("Colors", 300);
-    drag(CENTER, 200, 120);   // scroll down to the custom buttons
-    tap_label("Custom background", 300);
+    touch_tap(Q_TOP_LEFT, 300);
+    touch_tap(SWATCH_CUSTOM, 300);
+    touch_tap(H_TOP, 300);
     touch_tap(139, 14, 300);   // pick a hue on the ring (top, about 280 degrees)
     render_save("color-picker");
+}
+
+static void same_way(puck_settings_t *s)
+{
+    s->p2_same_way = true;
+}
+
+static void scene_counter_2p_same_way(void)
+{
+    two_players_in(false);
+    update_settings(same_way);
+    timer_paused_at_start();
+    render_advance(2000);   // let the running changes fade
+    render_save("counter-2p-same-way");
 }
 
 static void scene_splash(void)
@@ -352,14 +424,21 @@ static const struct {
     { "counter-1p-six", scene_counter_1p_six },
     { "counter-1p-overtime", scene_counter_1p_overtime },
     { "counter-2p", scene_counter_2p },
+    { "counter-2p-same-way", scene_counter_2p_same_way },
     { "menu", scene_menu },
     { "menu-new-game", scene_menu_new_game },
     { "menu-timer", scene_menu_timer },
+    { "menu-timer-off", scene_menu_timer_off },
     { "timer-set", scene_timer_set },
     { "history", scene_history },
     { "history-default-colors", scene_history_default_colors },
     { "settings", scene_settings },
+    { "brightness", scene_brightness },
+    { "auto-off", scene_auto_off },
+    { "auto-off-off", scene_auto_off_off },
     { "colors", scene_colors },
+    { "colors-2p", scene_colors_2p },
+    { "colors-custom", scene_colors_custom },
     { "color-picker", scene_color_picker },
     { "splash", scene_splash },
 };

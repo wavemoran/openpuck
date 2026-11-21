@@ -102,8 +102,10 @@ lv_obj_t *ui_add_done_button(lv_obj_t *parent, lv_event_cb_t cb)
 
 bool ui_back(void)
 {
-    return ui_timer_set_close() || ui_colors_picker_close() || ui_colors_close() || ui_settings_close()
-        || ui_history_close() || ui_menu_back();
+    // Topmost first: a dial or the picker, then the menu ring (the Custom ring
+    // sits over the swatch ring), then the full-screen panels.
+    return ui_dial_close() || ui_colors_picker_close() || ui_menu_back() || ui_colors_close()
+        || ui_history_close();
 }
 
 static void ui_show_splash(void)
