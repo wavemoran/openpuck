@@ -59,7 +59,7 @@ void ui_settings_open_brightness(void)
     ui_dial_open(&BRIGHTNESS_DIAL);
 }
 
-// ---- Auto-off: Off, then each minute choice ----
+// ---- Auto-off: Off, then each minute choice, wrapping around ----
 
 static void auto_off_read(ui_dial_state_t *state)
 {
@@ -73,8 +73,7 @@ static void auto_off_read(ui_dial_state_t *state)
         snprintf(state->unit, sizeof(state->unit), "min idle");
     }
     state->permille = (uint16_t)(index * 1000 / (PUCK_AUTO_OFF_DIAL_STOPS - 1));
-    state->at_min = index == 0;
-    state->at_max = index == PUCK_AUTO_OFF_DIAL_STOPS - 1;
+    // The dial wraps (60 -> Off -> 60), so neither button is ever dimmed.
 }
 
 static void auto_off_change(puck_settings_t *s, int dir)

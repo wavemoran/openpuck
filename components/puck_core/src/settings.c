@@ -113,15 +113,22 @@ void puck_settings_step_auto_off_dial(bool enabled, uint8_t minutes, int dir,
     const uint8_t snapped = puck_settings_step_auto_off(minutes, 0);
     *enabled_out = enabled;
     *minutes_out = snapped;
+    const uint8_t first = AUTO_OFF_CHOICES[0];
+    const uint8_t last = AUTO_OFF_CHOICES[AUTO_OFF_COUNT - 1];
     if (dir > 0) {
         if (!enabled) {
             *enabled_out = true;
-            *minutes_out = AUTO_OFF_CHOICES[0];
+            *minutes_out = first;
+        } else if (snapped == last) {
+            *enabled_out = false;          // wraps from 60 to Off
         } else {
             *minutes_out = puck_settings_step_auto_off(snapped, 1);
         }
-    } else if (dir < 0 && enabled) {
-        if (snapped == AUTO_OFF_CHOICES[0]) {
+    } else if (dir < 0) {
+        if (!enabled) {
+            *enabled_out = true;           // wraps from Off to 60
+            *minutes_out = last;
+        } else if (snapped == first) {
             *enabled_out = false;
         } else {
             *minutes_out = puck_settings_step_auto_off(snapped, -1);

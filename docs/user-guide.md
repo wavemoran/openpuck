@@ -180,7 +180,8 @@ with the number in the middle and a round **-** and **+** button on each side.
 Tap a button to change the length by 5 minutes. Hold it to keep going. The
 length can be anywhere from 5 to 180 minutes. The ring around the edge fills up
 as the length grows, and a button is dimmed when you reach that end. **Tap the
-number** (or press the power button) to go back to the counter. This is the
+number or the title** (it has a small **<** in front of it), or press the power
+button, to go back to the counter. This is the
 only place to set the length.
 
 ![Setting the timer length](images/timer-set.png)
@@ -311,7 +312,8 @@ Tap a half to open the color picker for that color:
    (the basic color).
 2. Use the **Tint** slider in the middle to make it darker or lighter. All the
    way left is black, all the way right is white, and the middle is the pure
-   color.
+   color. If the color you start from is black, white or gray, the
+   slider starts in the middle so the ring shows its colors right away.
 3. The circle in the middle shows a preview. **Tap the circle to save.** Tap
    **Cancel** to leave without saving. The power button also cancels. Either
    way you are back on the Custom ring.
@@ -324,8 +326,8 @@ whichever is easier to read. You can then change the text color with **Text**.
 ![The brightness page](images/brightness.png)
 
 Use **-** and **+** to change the screen brightness from 10% to 100%, in steps
-of 10%. The default is 60%. The screen changes as you tap. **Tap the number**
-(or press the power button) to go back to Settings.
+of 10%. The default is 60%. The screen changes as you tap. **Tap the number or
+the title** (or press the power button) to go back to Settings.
 
 ### Auto-off
 
@@ -337,11 +339,13 @@ press starts the countdown over. The puck stays on while the timer is running.
 
 Use **-** and **+** to step through **Off, 1, 2, 5, 10, 15, 20, 30, 45 and 60
 minutes**. The default is 10. **Off** keeps the puck on until you turn it off
-yourself:
+yourself. The choices go round in a loop: **+** at 60 goes to Off, and **-** at
+Off goes to 60.
 
 ![Auto-off set to Off](images/auto-off-off.png)
 
-**Tap the number** (or press the power button) to go back to Settings.
+**Tap the number or the title** (or press the power button) to go back to
+Settings.
 
 ### Battery
 

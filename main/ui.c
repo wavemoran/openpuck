@@ -66,8 +66,10 @@ lv_obj_t *ui_panel_create(const char *title)
     // Clickable so taps don't reach the counter underneath.
     lv_obj_set_clickable(panel, true);
     lv_obj_set_scrollable(panel, false);
-    lv_obj_t *label = ui_add_label(panel, &lv_font_montserrat_20, title);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, PANEL_TITLE_TOP);
+    if (title) {
+        lv_obj_t *label = ui_add_label(panel, &lv_font_montserrat_20, title);
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, PANEL_TITLE_TOP);
+    }
     return panel;
 }
 

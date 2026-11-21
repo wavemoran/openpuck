@@ -48,7 +48,7 @@ add_executable(screenshots
     ${ROOT}/main/logo.c
     ${ROOT}/main/fonts/puck_font_count_185.c
     ${ROOT}/main/fonts/puck_font_count_80.c
-    ${ROOT}/main/fonts/puck_font_dial_80.c
+    ${ROOT}/main/fonts/puck_font_dial_64.c
     ${ROOT}/main/fonts/puck_font_small_32.c
     ${ROOT}/main/fonts/puck_font_timer_26.c)
 # Stubs first, so they shadow the ESP-IDF headers; then the firmware headers.

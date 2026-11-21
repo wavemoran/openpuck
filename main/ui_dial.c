@@ -1,20 +1,24 @@
 // The value dial: one setting as a big value between round "-" and "+"
 // buttons, with its title above, a unit line and range line below, and a
-// progress arc around the rim. Holding a button repeats. Tapping the value (or
-// pressing power) closes it. Used for the timer length, brightness and
+// progress arc around the rim. Holding a button repeats. Tapping the title
+// (which has a back chevron) or the value, or pressing power, closes it. Used for the timer length, brightness and
 // auto-off; each supplies its own read, step and close functions.
 #include "ui_internal.h"
 
 #include "ui_theme.h"
 
-LV_FONT_DECLARE(puck_font_dial_80)
+LV_FONT_DECLARE(puck_font_dial_64)
 
 #define DIAL_SIZE         240
 #define VALUE_TOUCH_SIZE  110    // tap area around the center
 #define BUTTON_SIZE       52
 #define BUTTON_DX         84     // reaches 110 (inside the arc) and leaves 116 px for "Off"
 #define BUTTON_BORDER     2
-#define UNIT_DY           46     // unit under the center
+#define UNIT_DY           40     // unit under the center
+#define TITLE_DY          (-78)  // title row center: low enough to clear the arc
+#define TITLE_TOUCH_W     150
+#define TITLE_TOUCH_H     44
+#define CHEVRON_GAP       6      // back chevron to the title
 #define RANGE_DY          84     // range line near the bottom
 #define ARC_SIZE          236    // rim arc: radius 118, 6 px wide (inner edge 112)
 #define ARC_WIDTH         6
@@ -121,7 +125,7 @@ void ui_dial_open(const ui_dial_t *dial)
         return;
     }
     s_dial = dial;
-    s_panel = ui_panel_create(dial->title);
+    s_panel = ui_panel_create(NULL);   // the panel's title sits too high for the arc
 
     add_arc();
     s_down = add_step_button(-1, "-");
@@ -134,9 +138,23 @@ void ui_dial_open(const ui_dial_t *dial)
     lv_obj_set_scrollable(number, false);
     lv_obj_align(number, LV_ALIGN_CENTER, 0, 0);
     lv_obj_add_event_cb(number, close_event, LV_EVENT_CLICKED, NULL);
-    s_value = ui_add_label(number, &puck_font_dial_80, "");
+    s_value = ui_add_label(number, &puck_font_dial_64, "");
     lv_obj_set_clickable(s_value, false);
     lv_obj_center(s_value);
+
+    // Title row: "< Title", a tap target that goes back. The chevron hangs off
+    // the left of the centered title.
+    lv_obj_t *back = lv_obj_create(s_panel);
+    lv_obj_remove_style_all(back);
+    lv_obj_set_scrollable(back, false);
+    lv_obj_set_size(back, TITLE_TOUCH_W, TITLE_TOUCH_H);
+    lv_obj_align(back, LV_ALIGN_CENTER, 0, TITLE_DY);
+    lv_obj_add_event_cb(back, close_event, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *title = ui_add_label(back, &lv_font_montserrat_20, dial->title);
+    lv_obj_center(title);
+    lv_obj_t *chevron = ui_add_label(back, &lv_font_montserrat_14, LV_SYMBOL_LEFT);
+    lv_obj_set_style_text_color(chevron, UI_COLOR_MUTED, 0);
+    lv_obj_align_to(chevron, title, LV_ALIGN_OUT_LEFT_MID, -CHEVRON_GAP, 0);
 
     s_unit = ui_add_label(s_panel, &lv_font_montserrat_20, "");
     lv_obj_set_style_text_color(s_unit, UI_COLOR_MUTED, 0);

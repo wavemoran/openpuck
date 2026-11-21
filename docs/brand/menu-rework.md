@@ -96,6 +96,11 @@ range line, a step function, the arc fraction, and a callback that applies the
 value. Settings uses the same dial (screens 09–11). Timer length behaves as
 today: tapping the number or pressing power returns to the counter.
 
+*Revised after device testing:* the value is drawn at 64 px (80 px pushed "Off"
+and "180" into the buttons), the title sits lower (y ≈ 42 center) so it clears
+the arc, and a small muted chevron left of the title makes the title row a
+Back target (≥ 44 px tall), same as tapping the number.
+
 ### 06 History — new player tags
 On the default background only, the "P1"/"P2" text becomes a solid tag, 28×16,
 radius 3:
@@ -151,6 +156,8 @@ The value dial: title "Auto-off", value "10", unit "min idle", range line
   It shows the value "Off", the unit "stays on" and an empty arc.
 - Pressing + from Off sets `auto_off_enabled = true` and `auto_off_minutes = 1`.
 - Pressing − from 1 goes to Off.
+- *Revised after device testing:* the dial **wraps**. + from 60 goes to Off
+  and − from Off goes to 60, so neither button is ever dimmed on this dial.
 - The arc fraction is stop index / 9.
 
 **This is UI only.** The two existing fields keep their meaning, so there's no
@@ -230,7 +237,7 @@ automatically.
   `PUCK_SETTINGS_ENCODED_MAX` if needed. Data from versions 1–5 decodes with
   `p2_same_way = false`.
 - Add host tests in `test/host/` for v6 round-trip, v5 → v6 defaults, and the
-  auto-off dial stepping (both ends, Off ↔ 1, wrap-free clamping).
+  auto-off dial stepping (both ends, Off ↔ 1, wrapping 60 ↔ Off).
 
 ## Docs
 

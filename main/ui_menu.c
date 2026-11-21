@@ -28,13 +28,13 @@
 #define MENU_BAND_WIDTH    34    // pressed highlight, reaching the screen edge
 #define MENU_SEPARATOR_W   2
 
-// Custom ring (two halves): a dot and a straight label per half.
+// Custom ring (two halves): a dot beside a straight label in each half, kept
+// well clear of the center ring (radius 46).
 #define CUSTOM_DOT_SIZE    22
-#define CUSTOM_TOP_DOT_DY  (-87)
-#define CUSTOM_TOP_TEXT_DY (-58)
-#define CUSTOM_BOT_DOT_DY  64
-#define CUSTOM_BOT_TEXT_DY 86
-#define CUSTOM_FOR_DY      106
+#define CUSTOM_DOT_GAP     8
+#define CUSTOM_TOP_DY      (-74)  // row center; text spans about -85 to -63
+#define CUSTOM_BOT_DY      70
+#define CUSTOM_FOR_DY      94
 
 #define MENU_COLOR_TEXT      LOGO_COLOR_RING          // Bone
 #define MENU_COLOR_VALUE     UI_COLOR_MUTED
@@ -482,10 +482,20 @@ static void add_settings(void)
               ACTION_BATTERY);
 }
 
-// A filled circle in a color, outlined so black and near-black still show.
-static void add_dot(int32_t dy, uint32_t color)
+// A filled circle in a color, outlined so black and near-black still show,
+// followed by a label, centered as one row at dy.
+static void add_color_row(int32_t dy, uint32_t color, const char *text)
 {
-    lv_obj_t *dot = lv_obj_create(s_content);
+    lv_obj_t *row = lv_obj_create(s_content);
+    lv_obj_remove_style_all(row);
+    lv_obj_set_clickable(row, false);
+    lv_obj_set_size(row, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(row, CUSTOM_DOT_GAP, 0);
+    lv_obj_align(row, LV_ALIGN_CENTER, 0, dy);
+
+    lv_obj_t *dot = lv_obj_create(row);
     lv_obj_remove_style_all(dot);
     lv_obj_set_clickable(dot, false);
     lv_obj_set_size(dot, CUSTOM_DOT_SIZE, CUSTOM_DOT_SIZE);
@@ -495,7 +505,9 @@ static void add_dot(int32_t dy, uint32_t color)
     lv_obj_set_style_border_width(dot, 1, 0);
     lv_obj_set_style_border_color(dot, UI_COLOR_LINE_STRONG, 0);
     lv_obj_set_style_border_opa(dot, LV_OPA_COVER, 0);
-    lv_obj_align(dot, LV_ALIGN_CENTER, 0, dy);
+
+    lv_obj_t *label = ui_add_label(row, &lv_font_montserrat_20, text);
+    lv_obj_set_style_text_color(label, MENU_COLOR_TEXT, 0);
 }
 
 static lv_obj_t *add_straight(const lv_font_t *font, const char *text, int32_t dy)
@@ -513,10 +525,8 @@ static void add_custom(void)
     const puck_settings_t *settings = counter_settings();
     s_actions[PUCK_ZONE_TOP_LEFT] = ACTION_CUSTOM_BACKGROUND;
     s_actions[PUCK_ZONE_BOTTOM_LEFT] = ACTION_CUSTOM_TEXT;
-    add_dot(CUSTOM_TOP_DOT_DY, settings->player_background[player]);
-    add_straight(&lv_font_montserrat_20, "Background", CUSTOM_TOP_TEXT_DY);
-    add_dot(CUSTOM_BOT_DOT_DY, settings->player_text[player]);
-    add_straight(&lv_font_montserrat_20, "Text", CUSTOM_BOT_TEXT_DY);
+    add_color_row(CUSTOM_TOP_DY, settings->player_background[player], "Background");
+    add_color_row(CUSTOM_BOT_DY, settings->player_text[player], "Text");
     lv_obj_t *who = add_straight(&lv_font_montserrat_14, player == 0 ? "for P1" : "for P2",
                                  CUSTOM_FOR_DY);
     lv_obj_set_style_text_color(who, MENU_COLOR_VALUE, 0);

@@ -60,10 +60,11 @@ uint8_t puck_settings_step_auto_off(uint8_t minutes, int dir);
 // aren't a choice count as the nearest choice.
 uint8_t puck_settings_auto_off_dial_index(bool enabled, uint8_t minutes);
 
-// Step the dial one stop up (dir > 0) or down (dir < 0), clamped at both ends.
-// + from Off turns auto-off on at the first choice (1 min); - from the first
-// choice turns it off and keeps the minutes. dir == 0 changes nothing except
-// snapping minutes to the nearest choice.
+// Step the dial one stop up (dir > 0) or down (dir < 0). It wraps around:
+// + from Off turns auto-off on at the first choice (1 min), + from the last
+// choice (60 min) turns it off, and - does the reverse. Turning it off keeps
+// the minutes. dir == 0 changes nothing except snapping minutes to the
+// nearest choice.
 void puck_settings_step_auto_off_dial(bool enabled, uint8_t minutes, int dir,
                                       bool *enabled_out, uint8_t *minutes_out);
 

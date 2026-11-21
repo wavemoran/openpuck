@@ -226,7 +226,6 @@ static void test_auto_off_dial_off_and_first_stop(void)
     check_dial(false, 10, 1, true, 1);    // + from Off: on at 1 min
     check_dial(false, 45, 1, true, 1);
     check_dial(true, 1, -1, false, 1);    // - from 1: Off, minutes kept
-    check_dial(false, 10, -1, false, 10); // - at Off: stays Off, minutes kept
     check_dial(false, 10, 0, false, 10);
 }
 
@@ -239,10 +238,12 @@ static void test_auto_off_dial_steps_through_choices(void)
     }
 }
 
-static void test_auto_off_dial_clamps_at_top(void)
+static void test_auto_off_dial_wraps(void)
 {
-    check_dial(true, 60, 1, true, 60);
-    check_dial(true, 60, 5, true, 60);
+    check_dial(true, 60, 1, false, 60);   // + at 60: Off, minutes kept
+    check_dial(true, 60, 5, false, 60);   // any positive dir is one stop
+    check_dial(false, 10, -1, true, 60);  // - at Off: 60
+    check_dial(false, 1, -5, true, 60);
     check_dial(true, 10, 0, true, 10);
 }
 
@@ -251,7 +252,7 @@ static void test_auto_off_dial_snaps_non_choices(void)
     check_dial(true, 7, 0, true, 5);
     check_dial(true, 7, 1, true, 10);
     check_dial(true, 0, -1, false, 1);   // snaps to 1, then - goes Off
-    check_dial(true, 200, 1, true, 60);
+    check_dial(true, 200, 1, false, 60);  // snaps to 60, then wraps to Off
     check_dial(false, 7, 0, false, 5);
 }
 
@@ -607,7 +608,7 @@ int main(void)
     RUN_TEST(test_step_auto_off_dir_zero_snaps_to_nearest);
     RUN_TEST(test_auto_off_dial_off_and_first_stop);
     RUN_TEST(test_auto_off_dial_steps_through_choices);
-    RUN_TEST(test_auto_off_dial_clamps_at_top);
+    RUN_TEST(test_auto_off_dial_wraps);
     RUN_TEST(test_auto_off_dial_snaps_non_choices);
     RUN_TEST(test_auto_off_dial_index);
     RUN_TEST(test_step_timer_up_and_down);

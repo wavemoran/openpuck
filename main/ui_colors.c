@@ -205,8 +205,16 @@ void ui_colors_open_picker(bool background)
     s_edit_background = background;
     s_hue_drag = false;
     const puck_settings_t *settings = counter_settings();
-    puck_color_to_hue_tint(background ? settings->player_background[s_player]
-                                      : settings->player_text[s_player], &s_hue, &s_tint);
+    const uint32_t current = background ? settings->player_background[s_player]
+                                        : settings->player_text[s_player];
+    puck_color_to_hue_tint(current, &s_hue, &s_tint);
+    // Black, white and grays have no hue: starting at their tint (0 for black)
+    // would make the hue ring look like it does nothing. Start mid-tint, at
+    // the pure color, instead. Real colors open exactly as they are.
+    const uint8_t r = (uint8_t)(current >> 16), g = (uint8_t)(current >> 8), b = (uint8_t)current;
+    if (r == g && g == b) {
+        s_tint = 50;
+    }
 
     s_picker = lv_obj_create(lv_layer_top());
     lv_obj_remove_style_all(s_picker);
