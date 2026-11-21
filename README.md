@@ -24,7 +24,7 @@ MetalFab Tokens. "Life Puck" is used only to describe compatible hardware.
 
 | One player | Two players | Menu | Colors |
 |:---:|:---:|:---:|:---:|
-| <img src="docs/images/counter-1p.png" width="180" alt="One player counter showing 20 with the timer below"> | <img src="docs/images/counter-2p.png" width="180" alt="Two player counter, red and blue halves, player 2 upside down"> | <img src="docs/images/menu.png" width="180" alt="Menu with New game, Timer, History and Settings"> | <img src="docs/images/colors.png" width="180" alt="Colors screen with player buttons and color presets"> |
+| <img src="docs/images/counter-1p.png" width="180" alt="One player counter showing 20 with the timer below"> | <img src="docs/images/counter-2p.png" width="180" alt="Two player counter, red and blue halves, player 2 upside down"> | <img src="docs/images/menu.png" width="180" alt="Menu with New game, Timer, History and Settings"> | <img src="docs/images/colors.png" width="180" alt="Colors ring with ten color swatches around a preview"> |
 
 ## What it does
 
