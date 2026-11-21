@@ -16,9 +16,9 @@ void ui_open_menu(void);
 // the LVGL task.
 void ui_refresh_counter(void);
 
-// Power-button "back": close the topmost open layer (color picker, Colors,
-// Settings, History, menu sub-ring, menu) and return true, or return false if
-// nothing is open. Call only on the LVGL task.
+// Power-button "back": go back one step from the topmost open layer (value
+// dial, color picker, menu ring, Colors, History) and return true, or return
+// false if nothing is open. Call only on the LVGL task.
 bool ui_back(void);
 
 // Replace the screen with a full-screen message. Safe to call from any task;

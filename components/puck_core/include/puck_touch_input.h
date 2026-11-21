@@ -19,11 +19,13 @@ extern "C" {
 int16_t puck_touch_delta(int32_t y, int32_t screen_height, bool long_press);
 
 // Which player and change a touch at (x, y) means. 1 player: top half +, bottom
-// half -. 2 players: bottom half is player 0, top half is player 1 (shown
-// rotated 180 degrees); in each half the player's own left is -, right is +.
+// half -. 2 players: bottom half is player 0, top half is player 1; in each
+// half the player's own left is -, right is +. Player 1 is shown rotated 180
+// degrees, so their left is screen-right, unless p2_same_way: then they read
+// upright and both halves use screen-left for - and screen-right for +.
 // Returns false if player_count isn't 1 or 2.
 bool puck_touch_target(int32_t x, int32_t y, int32_t width, int32_t height,
-                       uint8_t player_count, bool long_press,
+                       uint8_t player_count, bool p2_same_way, bool long_press,
                        uint8_t *player, int16_t *delta);
 
 // True when (x, y) is within PUCK_CENTER_RADIUS of the screen center

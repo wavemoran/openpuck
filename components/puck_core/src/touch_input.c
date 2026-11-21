@@ -9,7 +9,7 @@ int16_t puck_touch_delta(int32_t y, int32_t screen_height, bool long_press)
 }
 
 bool puck_touch_target(int32_t x, int32_t y, int32_t width, int32_t height,
-                       uint8_t player_count, bool long_press,
+                       uint8_t player_count, bool p2_same_way, bool long_press,
                        uint8_t *player, int16_t *delta)
 {
     if (player_count == 1) {
@@ -23,8 +23,8 @@ bool puck_touch_target(int32_t x, int32_t y, int32_t width, int32_t height,
     const int16_t step = long_press ? PUCK_LONG_PRESS_STEP : PUCK_TAP_STEP;
     const bool bottom = y >= height / 2;
     const bool right_of_center = x >= width / 2;
-    // The top player faces the other way, so their left and right swap.
-    const bool plus = bottom ? right_of_center : !right_of_center;
+    // A top player facing the other way has their left and right swapped.
+    const bool plus = bottom || p2_same_way ? right_of_center : !right_of_center;
     *player = bottom ? 0 : 1;
     *delta = plus ? step : (int16_t)-step;
     return true;

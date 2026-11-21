@@ -73,6 +73,7 @@ static lv_obj_t *s_bg[2];
 // Tap flash rectangles behind the labels: [0] top half, [1] bottom half.
 static lv_obj_t *s_flash[2];
 static uint8_t s_built_players;
+static bool s_built_same_way;   // 2 players: P2's half was built upright
 
 // Last values shown, so the labels are only touched when something changes.
 static char s_timer_text[PUCK_TIMER_TEXT_MAX];
@@ -273,7 +274,7 @@ static void pad_event(lv_event_t *e)
     uint8_t player;
     int16_t delta;
     if (puck_touch_target(p.x, p.y, lv_obj_get_width(s_pad), lv_obj_get_height(s_pad),
-                          counter_game()->player_count, long_press, &player, &delta)) {
+                          counter_game()->player_count, counter_settings()->p2_same_way, long_press, &player, &delta)) {
         apply(player, delta);
     }
 }
@@ -359,11 +360,12 @@ static void build_one_player(void)
     add_timer_pill(ONE_TIMER_DY, false);
 }
 
-static void build_half(uint8_t player, bool flip)
+static void build_half(uint8_t player, bool top, bool flip)
 {
-    // Player 0 is the bottom half; player 1 the top half, facing the other way.
+    // Player 0 is the bottom half; player 1 the top half, facing the other way
+    // unless P2 faces the same way. "-" is on the player's own left.
     const int32_t side = flip ? -1 : 1;
-    const int32_t half_dy = flip ? -1 : 1;
+    const int32_t half_dy = top ? -1 : 1;
     s_view[player].count = add_label_at(&puck_font_count_80, "", 0, half_dy * TWO_COUNT_DY, flip);
     s_view[player].underline = add_underline();
     s_view[player].count_dy = half_dy * TWO_COUNT_DY;
@@ -388,8 +390,8 @@ static void build_two_players(void)
     lv_obj_set_style_bg_opa(divider, LV_OPA_COVER, 0);
     lv_obj_align(divider, LV_ALIGN_CENTER, 0, 0);
 
-    build_half(0, false);
-    build_half(1, true);
+    build_half(0, false, false);
+    build_half(1, true, !s_built_same_way);
 
     // Both on the divider, upright for player 1, with black fill so the line
     // doesn't run through them. The battery sits against the right edge.
@@ -405,6 +407,7 @@ static void build(void)
 {
     lv_obj_clean(s_root);
     s_built_players = counter_game()->player_count;
+    s_built_same_way = counter_settings()->p2_same_way;
 
     // Full-screen touch pad underneath; labels aren't clickable, so touches
     // anywhere reach it.
@@ -554,7 +557,8 @@ void ui_counter_refresh(bool new_game, uint32_t now_ms)
     if (!s_root) {
         return;
     }
-    if (counter_game()->player_count != s_built_players) {
+    if (counter_game()->player_count != s_built_players
+        || (s_built_players == 2 && counter_settings()->p2_same_way != s_built_same_way)) {
         build();
     } else {
         apply_colors();

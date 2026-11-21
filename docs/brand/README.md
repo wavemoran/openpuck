@@ -68,7 +68,7 @@ pre-blended solid colors over black:
 | `AMBER` | `#FFB547` | Two-player seam, running change |
 | `OVERTIME` | `#FF7A59` | Overtime timer text and pill outline |
 | `P1_HISTORY` | `#4FC3F7` | P1 label in History on the default background |
-| `P2_HISTORY` | `#A08CFF` | P2 label in History on the default background |
+| `P2_HISTORY` | `#FFE45C` | P2 tag in History on the default background (dark ink `#1F1A00`) |
 
 Player colors (presets and custom) stay the user's; a colored background draws
 the chrome in that player's text color instead.

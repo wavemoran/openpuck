@@ -22,7 +22,10 @@
 // Amber means exactly two things: the two-player seam and the running change.
 #define UI_COLOR_AMBER          lv_color_hex(UI_HEX_AMBER)
 #define UI_COLOR_OVERTIME       lv_color_hex(0xFF7A59)   // overtime timer text and pill
-#define UI_COLOR_P1_HISTORY     lv_color_hex(0x4FC3F7)   // P1 tag in History (default background)
-#define UI_COLOR_P2_HISTORY     lv_color_hex(UI_HEX_VIOLET) // P2 tag in History (default background)
+#define UI_COLOR_P1_HISTORY     lv_color_hex(0x4FC3F7)   // P1 tag fill in History (default background)
+#define UI_COLOR_P1_HISTORY_INK lv_color_hex(0x04131C)   // P1 tag text
+#define UI_COLOR_P2_HISTORY     lv_color_hex(0xFFE45C)   // P2 tag fill in History (default background)
+#define UI_COLOR_P2_HISTORY_INK lv_color_hex(0x1F1A00)   // P2 tag text
+#define UI_COLOR_DISABLED_FILL  lv_color_hex(0x0B0B12)   // dimmed dial button at the end of its range
 
 #define UI_BUTTON_RADIUS 3

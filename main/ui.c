@@ -66,8 +66,10 @@ lv_obj_t *ui_panel_create(const char *title)
     // Clickable so taps don't reach the counter underneath.
     lv_obj_set_clickable(panel, true);
     lv_obj_set_scrollable(panel, false);
-    lv_obj_t *label = ui_add_label(panel, &lv_font_montserrat_20, title);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, PANEL_TITLE_TOP);
+    if (title) {
+        lv_obj_t *label = ui_add_label(panel, &lv_font_montserrat_20, title);
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, PANEL_TITLE_TOP);
+    }
     return panel;
 }
 
@@ -102,8 +104,10 @@ lv_obj_t *ui_add_done_button(lv_obj_t *parent, lv_event_cb_t cb)
 
 bool ui_back(void)
 {
-    return ui_timer_set_close() || ui_colors_picker_close() || ui_colors_close() || ui_settings_close()
-        || ui_history_close() || ui_menu_back();
+    // Topmost first: a dial or the picker, then the menu ring (the Custom ring
+    // sits over the swatch ring), then the full-screen panels.
+    return ui_dial_close() || ui_colors_picker_close() || ui_menu_back() || ui_colors_close()
+        || ui_history_close();
 }
 
 static void ui_show_splash(void)

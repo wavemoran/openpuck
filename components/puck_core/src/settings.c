@@ -6,7 +6,7 @@
 #include <string.h>
 
 static const uint8_t MAGIC[4] = { 'O', 'P', 'S', 'T' };
-#define SETTINGS_VERSION 5
+#define SETTINGS_VERSION 6
 #define HEADER_SIZE      5   // magic + version
 #define CRC_SIZE         4
 #define MIN_ENCODED_SIZE (HEADER_SIZE + CRC_SIZE)
@@ -14,6 +14,7 @@ static const uint8_t MAGIC[4] = { 'O', 'P', 'S', 'T' };
 #define COLOR_BYTES     (PUCK_MAX_PLAYERS * 6)  // per player: background RGB, text RGB
 #define TIMER_ENABLED_BYTES 1
 #define BRIGHTNESS_BYTES    1
+#define P2_SAME_WAY_BYTES   1
 #define COLOR_MAX       0xFFFFFFu
 
 static const uint8_t AUTO_OFF_CHOICES[] = { 1, 2, 5, 10, 15, 20, 30, 45, 60 };
@@ -27,6 +28,7 @@ void puck_settings_defaults(puck_settings_t *settings)
     settings->battery_display = PUCK_BATTERY_DISPLAY_ICON;
     settings->timer_enabled = true;
     settings->brightness = PUCK_BRIGHTNESS_DEFAULT;
+    settings->p2_same_way = false;
     for (int i = 0; i < PUCK_MAX_PLAYERS; i++) {
         settings->player_background[i] = PUCK_COLOR_BLACK;
         settings->player_text[i] = PUCK_COLOR_WHITE;
@@ -90,6 +92,50 @@ uint8_t puck_settings_step_auto_off(uint8_t minutes, int dir)
     return best;
 }
 
+uint8_t puck_settings_auto_off_dial_index(bool enabled, uint8_t minutes)
+{
+    if (!enabled) {
+        return 0;
+    }
+    const uint8_t choice = puck_settings_step_auto_off(minutes, 0);
+    // choice is always one of the choices; the last needs no comparison.
+    size_t i = 0;
+    while (i + 1 < AUTO_OFF_COUNT && AUTO_OFF_CHOICES[i] != choice) {
+        i++;
+    }
+    return (uint8_t)(i + 1);
+}
+
+void puck_settings_step_auto_off_dial(bool enabled, uint8_t minutes, int dir,
+                                      bool *enabled_out, uint8_t *minutes_out)
+{
+    _Static_assert(AUTO_OFF_COUNT + 1 == PUCK_AUTO_OFF_DIAL_STOPS, "Off plus each choice");
+    const uint8_t snapped = puck_settings_step_auto_off(minutes, 0);
+    *enabled_out = enabled;
+    *minutes_out = snapped;
+    const uint8_t first = AUTO_OFF_CHOICES[0];
+    const uint8_t last = AUTO_OFF_CHOICES[AUTO_OFF_COUNT - 1];
+    if (dir > 0) {
+        if (!enabled) {
+            *enabled_out = true;
+            *minutes_out = first;
+        } else if (snapped == last) {
+            *enabled_out = false;          // wraps from 60 to Off
+        } else {
+            *minutes_out = puck_settings_step_auto_off(snapped, 1);
+        }
+    } else if (dir < 0) {
+        if (!enabled) {
+            *enabled_out = true;           // wraps from Off to 60
+            *minutes_out = last;
+        } else if (snapped == first) {
+            *enabled_out = false;
+        } else {
+            *minutes_out = puck_settings_step_auto_off(snapped, -1);
+        }
+    }
+}
+
 uint8_t puck_settings_step_timer(uint8_t minutes, int dir)
 {
     int next = minutes;
@@ -139,6 +185,9 @@ static size_t encoded_size(uint8_t version)
     case 5:
         return HEADER_SIZE + V2_FIELD_BYTES + COLOR_BYTES + TIMER_ENABLED_BYTES + BRIGHTNESS_BYTES
                + CRC_SIZE;
+    case 6:
+        return HEADER_SIZE + V2_FIELD_BYTES + COLOR_BYTES + TIMER_ENABLED_BYTES + BRIGHTNESS_BYTES
+               + P2_SAME_WAY_BYTES + CRC_SIZE;
     default:
         return 0;
     }
@@ -182,7 +231,8 @@ size_t puck_settings_encode(const puck_settings_t *settings, uint8_t *buf, size_
         }
     }
     *p++ = settings->timer_enabled ? 1 : 0;
-    *p = settings->brightness;
+    *p++ = settings->brightness;
+    *p = settings->p2_same_way ? 1 : 0;
     put_u32(buf + size - CRC_SIZE, puck_crc32(buf, size - CRC_SIZE));
     return size;
 }
@@ -244,6 +294,14 @@ puck_state_result_t puck_settings_decode(const uint8_t *buf, size_t len, puck_se
     }
     if (version >= 5) {
         decoded.brightness = buf[HEADER_SIZE + V2_FIELD_BYTES + COLOR_BYTES + TIMER_ENABLED_BYTES];
+    }
+    if (version >= 6) {
+        uint8_t same_way = buf[HEADER_SIZE + V2_FIELD_BYTES + COLOR_BYTES + TIMER_ENABLED_BYTES
+                               + BRIGHTNESS_BYTES];
+        if (same_way > 1) {
+            return PUCK_STATE_ERR_INVALID;
+        }
+        decoded.p2_same_way = same_way == 1;
     }
     if (!puck_settings_is_valid(&decoded)) {
         return PUCK_STATE_ERR_INVALID;

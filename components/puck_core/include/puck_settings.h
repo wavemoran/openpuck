@@ -39,6 +39,7 @@ typedef struct {
     uint32_t player_text[PUCK_MAX_PLAYERS];
     bool timer_enabled;          // show and use the timer; default true
     uint8_t brightness;          // backlight percent, PUCK_BRIGHTNESS_MIN..MAX in steps of 10; default 60
+    bool p2_same_way;            // 2 players: P2's half reads upright like P1's; default false (faces across)
 } puck_settings_t;
 
 void puck_settings_defaults(puck_settings_t *settings);
@@ -49,6 +50,23 @@ bool puck_settings_is_valid(const puck_settings_t *settings);
 // ends. A value that isn't a choice steps to the nearest choice in that
 // direction.
 uint8_t puck_settings_step_auto_off(uint8_t minutes, int dir);
+
+// The Auto-off dial: one control with PUCK_AUTO_OFF_DIAL_STOPS stops, Off then
+// each auto-off choice. It maps onto the two stored fields without changing
+// their meaning: Off is auto_off_enabled = false with auto_off_minutes kept.
+#define PUCK_AUTO_OFF_DIAL_STOPS 10
+
+// Stop index 0 (Off) .. PUCK_AUTO_OFF_DIAL_STOPS - 1 (60 min). Minutes that
+// aren't a choice count as the nearest choice.
+uint8_t puck_settings_auto_off_dial_index(bool enabled, uint8_t minutes);
+
+// Step the dial one stop up (dir > 0) or down (dir < 0). It wraps around:
+// + from Off turns auto-off on at the first choice (1 min), + from the last
+// choice (60 min) turns it off, and - does the reverse. Turning it off keeps
+// the minutes. dir == 0 changes nothing except snapping minutes to the
+// nearest choice.
+void puck_settings_step_auto_off_dial(bool enabled, uint8_t minutes, int dir,
+                                      bool *enabled_out, uint8_t *minutes_out);
 
 // Step the timer duration by PUCK_TIMER_STEP_MINUTES, clamped to the range.
 uint8_t puck_settings_step_timer(uint8_t minutes, int dir);
@@ -64,8 +82,10 @@ uint8_t puck_settings_step_brightness(uint8_t percent, int dir);
 //              background R, G, B and text R, G, B (12 bytes), crc32 (25 bytes)
 //   version 4: version 3's fields, then timer_enabled (0/1),
 //              crc32 (26 bytes)
-//   version 5 (current): version 4's fields, then brightness (percent),
+//   version 5: version 4's fields, then brightness (percent),
 //              crc32 (27 bytes)
+//   version 6 (current): version 5's fields, then p2_same_way (0/1),
+//              crc32 (28 bytes)
 // Older versions decode with defaults for the fields they lack.
 #define PUCK_SETTINGS_ENCODED_MAX 32
 size_t puck_settings_encode(const puck_settings_t *settings, uint8_t *buf, size_t cap);

@@ -53,8 +53,8 @@ solid colors** over black. Use the solid value; don't rely on opacity.
 | `VIOLET_PRESSED` | `#13111F` | Violet at 12% over black: menu pressed band |
 | `AMBER` | `#FFB547` | Two-player seam, running change |
 | `OVERTIME` | `#FF7A59` | Overtime timer text and pill outline (was palette red) |
-| `P1_HISTORY` | `#4FC3F7` | P1 label in History on the default background (unchanged) |
-| `P2_HISTORY` | `#A08CFF` | P2 label in History on the default background (was amber `#FFB74D`) |
+| `P1_HISTORY` | `#4FC3F7` | P1 tag fill in History on the default background (unchanged); ink `#04131C` |
+| `P2_HISTORY` | `#FFE45C` | P2 tag fill in History on the default background (was violet `#A08CFF`, before that amber `#FFB74D`; see [menu-rework.md](menu-rework.md)); ink `#1F1A00` |
 
 Consider collecting these in one header (e.g. `main/ui_theme.h`) instead of
 scattering hex values, since several files repeat the same greys today.

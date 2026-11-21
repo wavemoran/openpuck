@@ -94,6 +94,12 @@ In a two player game the screen is split into two halves, one for each player.
   from that player's own point of view.** For you at the bottom, tap the left
   side of your half to subtract and the right side to add. Player 2 sits across
   from you, so their left and right are the opposite of yours.
+
+**Sitting side by side?** Set **P2 faces** to **same way** in the
+[New game](#new-game) menu. Player 2's half then reads the right way up like
+yours, and both halves subtract on the left and add on the right:
+
+![Two player counter with both halves upright](images/counter-2p-same-way.png)
 - Tap for 1. Press and hold for 5, and keep holding to keep going.
 - Each player has their own number, running change, tap flash and underline.
   Each number stays between 0 and 99.
@@ -107,21 +113,25 @@ Player colors can be set separately for each player. See [Colors](#colors).
 ## The menu
 
 **Press and hold the center of the screen** to open the menu. (The center is
-the middle circle, about the size of a coin.) The menu has four sections, one
-in each corner of the screen:
+the middle circle, about the size of a coin.) The menu is a ring with four
+sections, one in each corner of the screen:
 
 ![The main menu](images/menu.png)
 
 | Section | Where | What it does |
 |---|---|---|
-| **New game** | top left | Start over. |
-| **Timer** | top right | Control the countdown timer. |
+| **New game** | top left | Start over, and choose which way player 2 faces. |
+| **Timer** | top right | Control the countdown timer and set its length. |
+| **Settings** | bottom left | Colors, brightness, auto-off and the battery display. |
 | **History** | bottom right | See every change since the game started. |
-| **Settings** | bottom left | Colors, brightness and more. |
 
 To pick one, touch it and lift your finger while still inside the same
 section. If you slide out of the section before you let go, nothing happens.
 **Tap the logo in the center to close the menu.**
+
+New game, Timer and Settings open a ring of their own. Some sections show a
+second, smaller line with the current value, such as "60%" under Brightness.
+In these rings the center says **Back** and takes you to the main menu.
 
 ### New game
 
@@ -129,13 +139,23 @@ section. If you slide out of the section before you let go, nothing happens.
 
 | Choice | Where | What it does |
 |---|---|---|
-| **1 player** | top left | Start a one player game. |
-| **2 players** | top right | Start a two player game. |
-| **Reset** | bottom left | Start over with the same number of players. |
+| **Reset** | top left | Start over with the same number of players ("keeps 1P" or "keeps 2P"). |
+| **P2 faces** | top right | Switch between **across** and **same way**. See below. |
+| **1 player** | bottom left | Start a one player game. |
+| **2 players** | bottom right | Start a two player game. |
 
-Every new game sets all numbers back to 0, clears the history and resets the
-timer. The menu closes. In this menu, the center button says **Back** and takes
-you to the main menu.
+The game you are playing now is marked "playing now". Every new game sets all
+numbers back to 0, clears the history and resets the timer, and the menu
+closes.
+
+**P2 faces** decides how player 2's half of the screen is turned:
+
+- **across** (the default): upside down, for a player sitting opposite you.
+- **same way**: the right way up, for a player sitting next to you.
+
+Tapping it switches right away without starting a new game, and the menu stays
+open. You can set it during a one player game too, so it is ready for the next
+two player game. It is saved with your settings.
 
 ### Timer menu
 
@@ -143,21 +163,26 @@ you to the main menu.
 
 | Choice | Where | What it does |
 |---|---|---|
-| **Start** / **Pause** | top left | Starts the timer, or pauses it while it runs. |
+| **Start** / **Pause** | top left | Starts the timer, or pauses it while it runs. The small line shows the time left. |
 | **Reset** | top right | Puts the timer back to its full length. |
+| **Timer off** | bottom left | Turns the timer off (and resets it). |
 | **(length) min** | bottom right | Opens the page where you set the length. |
-| **Timer off** / **Timer on** | bottom left | Turns the timer off or on. |
 
-If the timer is off, only **Timer on** is shown. Turning the timer off also
-resets it. Start, Pause, Reset and the on/off choice close the menu. The
-center button says **Back**.
+When the timer is off, the ring only shows **Timer on**, in the top left, with
+the length it will start with:
+
+![The Timer menu with the timer off](images/menu-timer-off.png)
+
+Start, Pause, Reset and Timer on/off close the menu.
 
 **Setting the length.** Tap the length (for example "55 min"). A page opens
 with the number in the middle and a round **-** and **+** button on each side.
 Tap a button to change the length by 5 minutes. Hold it to keep going. The
-length can be anywhere from 5 to 180 minutes. **Tap the number** (or press the
-power button) to go back to the counter. You can also change the length in
-[Settings](#timer-length).
+length can be anywhere from 5 to 180 minutes. The ring around the edge fills up
+as the length grows, and a button is dimmed when you reach that end. **Tap the
+number or the title** (it has a small **<** in front of it), or press the power
+button, to go back to the counter. This is the
+only place to set the length.
 
 ![Setting the timer length](images/timer-set.png)
 
@@ -166,8 +191,10 @@ power button) to go back to the counter. You can also change the length in
 The power button does different things depending on how long you press it.
 
 - **Short press:**
-  - In a menu, History, Settings, the color screens or the length page: **go
-    back** one step. From the main menu it closes the menu.
+  - In a menu, History, the color screens or any page with **-** and **+**:
+    **go back** one step. From the main menu it closes the menu. The
+    brightness and auto-off pages go back to Settings; the timer length page
+    goes back to the counter.
   - On the counter: **start or pause the timer.** This only works when the
     timer is on.
 - **Long press (2 seconds):** turns the puck off.
@@ -211,9 +238,9 @@ recent 100.
   "+5" row. If they cancel each other out, the row disappears.
 - In a two player game, each row starts with **P1** or **P2**.
 - Rows use each player's colors. On the default black background, rows are
-  dark panels where P1 is light blue, P2 is violet, adds are green and
-  subtracts are red. On a colored background, the row uses that player's own
-  colors.
+  dark panels with a solid tag for the player (**P1 sky blue**, **P2
+  yellow**), adds in green and subtracts in red. On a colored background, the
+  row uses that player's own colors.
 
   ![History on the default black background](images/history-default-colors.png)
 - With no changes, it says "No changes yet".
@@ -224,36 +251,60 @@ Starting a new game clears the history.
 
 ## Settings
 
-Open Settings from the menu (bottom left). It is a list you scroll with your
-finger. Changes apply right away and are saved. Tap **Done** at the bottom (or
-press the power button) to go back to the counter.
-The firmware version ("OpenPuck v...") is shown at the bottom of Settings, below
-**Done**.
+Open Settings from the menu (bottom left). It is a ring like the others.
+Changes apply right away and are saved. The center says **Back** and shows the
+firmware version (for example "v0.3.0"), which is useful when reporting a
+problem.
 
-![The Settings list](images/settings.png)
+![The Settings ring](images/settings.png)
 
-The settings, in order:
+| Choice | Where | Small line | What it does |
+|---|---|---|---|
+| **Colors** | top left | "P1 / P2" in a two player game | Opens the colors. |
+| **Brightness** | top right | for example "60%" | Opens the brightness page. |
+| **Auto-off** | bottom left | for example "10 min", or "Off" | Opens the auto-off page. |
+| **Battery** | bottom right | "Off", "Icon" or "Icon + %" | Switches to the next choice. |
 
 ### Colors
 
-Pick the colors of your counter. Each player has their own. Tap **P1** or
-**P2** at the top to choose whose colors you are changing. P1 is the bottom
-player in a two player game, and the color used in a one player game.
+Pick the colors of your counter. Each player has their own.
 
-![The Colors screen](images/colors.png)
+![The Colors ring, one player](images/colors.png)
 
-**Presets.** Scroll down to see all nine, in rows of three:
+Ten round **swatches** sit around the edge, each showing "20" in its colors:
 
 - **Default:** white on black.
 - **Blue, Green, Red, Yellow:** a colored background with a white number
   (black on Yellow).
 - **Blue text, Green text, Red text, Yellow text:** a black background with a
   colored number.
+- **Custom** (the rainbow one with a **+**): make your own. See below.
 
-**Tapping a preset applies it and takes you straight back to the counter.**
+The colors you are using now have a violet ring around their swatch. The
+circle in the middle is a preview.
 
-**Custom colors.** Below the presets are two buttons: **Custom background**
-and **Custom text**.
+**One player game:** tapping a swatch applies it and takes you straight back
+to the counter.
+
+**Two player game:** the preview is split like the counter, player 2 on top
+and player 1 below, with the amber line between them. **Tap a half of the
+preview** to choose whose colors you are changing; that half gets a violet
+outline and a small "P1" or "P2". Player 1 is chosen when the ring opens.
+Tapping a swatch applies it to that player and the ring stays open, so you can
+set the other player too.
+
+![The Colors ring, two players](images/colors-2p.png)
+
+Tap **Done** at the bottom (or press the power button) to go back to Settings.
+
+**Custom colors.** Tap the **Custom** swatch. A ring with two halves opens for
+the chosen player: **Background** on top and **Text** at the bottom, each with
+a dot in its current color. Tap the center (or press the power button) to go
+back to the swatches.
+
+![The Custom ring](images/colors-custom.png)
+
+Tap a half to open the color picker for that color:
 
 ![The color picker](images/color-picker.png)
 
@@ -261,24 +312,45 @@ and **Custom text**.
    (the basic color).
 2. Use the **Tint** slider in the middle to make it darker or lighter. All the
    way left is black, all the way right is white, and the middle is the pure
-   color.
+   color. If the color you start from is black, white or gray, the
+   slider starts in the middle so the ring shows its colors right away.
 3. The circle in the middle shows a preview. **Tap the circle to save.** Tap
-   **Cancel** to leave without saving. The power button also cancels.
+   **Cancel** to leave without saving. The power button also cancels. Either
+   way you are back on the Custom ring.
 
 When you save a custom background, the puck picks black or white text for you,
-whichever is easier to read. You can then change the text color with
-**Custom text**.
-
-Tap **Done** to go back to Settings.
+whichever is easier to read. You can then change the text color with **Text**.
 
 ### Brightness
 
+![The brightness page](images/brightness.png)
+
 Use **-** and **+** to change the screen brightness from 10% to 100%, in steps
-of 10%. The default is 60%.
+of 10%. The default is 60%. The screen changes as you tap. **Tap the number or
+the title** (or press the power button) to go back to Settings.
+
+### Auto-off
+
+![The auto-off page](images/auto-off.png)
+
+How long the puck waits, after it has been left alone, before it turns itself
+off. "Left alone" means no touch and no press of the power button. Any touch or
+press starts the countdown over. The puck stays on while the timer is running.
+
+Use **-** and **+** to step through **Off, 1, 2, 5, 10, 15, 20, 30, 45 and 60
+minutes**. The default is 10. **Off** keeps the puck on until you turn it off
+yourself. The choices go round in a loop: **+** at 60 goes to Off, and **-** at
+Off goes to 60.
+
+![Auto-off set to Off](images/auto-off-off.png)
+
+**Tap the number or the title** (or press the power button) to go back to
+Settings.
 
 ### Battery
 
-Tap the button to switch between three choices:
+Tap **Battery** to switch to the next choice. The menu stays open and the
+small line shows the new choice:
 
 - **Off:** no battery indicator.
 - **Icon:** the battery symbol only. This is the default.
@@ -286,24 +358,6 @@ Tap the button to switch between three choices:
 
 In a two player game, the percentage is left out while the timer is showing,
 so everything fits on the middle line.
-
-### Timer length
-
-Use **-** and **+** to set the countdown length from 5 to 180 minutes, in
-steps of 5. The default is 55.
-
-### Auto-off
-
-A switch. When it is on (the default), the puck turns itself off after it has
-been left alone. "Left alone" means no touch and no press of the power button.
-Any touch or press starts the countdown over. The puck stays on while the timer
-is running.
-
-### Auto-off after
-
-How many minutes the puck waits before it turns itself off. Use **-** and **+**
-to pick 1, 2, 5, 10, 15, 20, 30, 45 or 60 minutes. The default is 10. This row
-is dimmed when Auto-off is switched off.
 
 ## What is saved
 
@@ -313,7 +367,7 @@ The puck remembers these things when it is turned off and back on:
 - the history,
 - the timer (it comes back paused),
 - all of your settings: colors, brightness, battery display, timer length,
-  timer on or off, and auto-off.
+  timer on or off, auto-off, and which way player 2 faces.
 
 Changes are saved a couple of seconds after you stop tapping, and again when
 the puck turns itself off. If power is lost right after a tap, that last tap

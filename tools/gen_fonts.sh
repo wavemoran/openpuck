@@ -22,6 +22,7 @@ gen() {  # name size range
 DIGITS=0x30-0x39
 gen puck_font_count_185 185 "$DIGITS"   # 1 player (drawn with letter spacing -10 so 0-99 fit)
 gen puck_font_count_80  80  "$DIGITS"   # 2 players
+gen puck_font_dial_64   64  "$DIGITS,0x4F,0x66"   # value dials: digits and "Off" (fit between the buttons)
 gen puck_font_small_32  32  "$DIGITS,0x2B,0x2D,0x3A"   # running change: +3
 gen puck_font_timer_26  26  "$DIGITS,0x2B,0x2D,0x3A"   # timer: 54:59, +0:42
 echo "Generated fonts in $OUT/"
