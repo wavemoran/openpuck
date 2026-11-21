@@ -42,12 +42,20 @@ static const uint8_t V4_TIMER_OFF_FIXTURE[26] = {
     0x8b, 0xa0,
 };
 
-// Version 5 (current format): the V4 fixture's fields with brightness = 30.
+// Version 5: the V4 fixture's fields with brightness = 30.
 static const uint8_t V5_BRIGHTNESS_FIXTURE[27] = {
     0x4f, 0x50, 0x53, 0x54, 0x05, 0x01, 0x0a, 0x37,
     0x02, 0x3d, 0x91, 0xbc, 0xff, 0xff, 0xff, 0xd6,
     0xac, 0x48, 0x00, 0x00, 0x00, 0x00, 0x1e, 0x3f,
     0x1b, 0xf5, 0x35,
+};
+
+// Version 6 (current format): the V5 fixture's fields with p2_same_way = 1.
+static const uint8_t V6_SAME_WAY_FIXTURE[28] = {
+    0x4f, 0x50, 0x53, 0x54, 0x06, 0x01, 0x0a, 0x37,
+    0x02, 0x3d, 0x91, 0xbc, 0xff, 0xff, 0xff, 0xd6,
+    0xac, 0x48, 0x00, 0x00, 0x00, 0x00, 0x1e, 0x01,
+    0xf7, 0x4a, 0xff, 0xbc,
 };
 
 static puck_settings_t settings;
@@ -58,7 +66,7 @@ void setUp(void)
 {
     puck_settings_defaults(&settings);
     encoded_len = puck_settings_encode(&settings, buf, sizeof(buf));
-    TEST_ASSERT_EQUAL(27, encoded_len);
+    TEST_ASSERT_EQUAL(28, encoded_len);
 }
 
 void tearDown(void) {}
@@ -94,6 +102,7 @@ static void test_defaults(void)
     TEST_ASSERT_EQUAL_UINT8(55, s.timer_minutes);
     TEST_ASSERT_EQUAL_UINT8(60, s.brightness);
     TEST_ASSERT_EQUAL_UINT8(PUCK_BATTERY_DISPLAY_ICON, s.battery_display);
+    TEST_ASSERT_FALSE(s.p2_same_way);
     for (int i = 0; i < PUCK_MAX_PLAYERS; i++) {
         TEST_ASSERT_EQUAL_HEX32(0x000000, s.player_background[i]);
         TEST_ASSERT_EQUAL_HEX32(0xFFFFFF, s.player_text[i]);
@@ -202,6 +211,60 @@ static void test_step_auto_off_dir_zero_snaps_to_nearest(void)
     TEST_ASSERT_EQUAL_UINT8(20, puck_settings_step_auto_off(25, 0));
 }
 
+// One dial step from (enabled, minutes); checks the result.
+static void check_dial(bool enabled, uint8_t minutes, int dir, bool want_enabled, uint8_t want_minutes)
+{
+    bool out_enabled = !want_enabled;
+    uint8_t out_minutes = 0;
+    puck_settings_step_auto_off_dial(enabled, minutes, dir, &out_enabled, &out_minutes);
+    TEST_ASSERT_EQUAL(want_enabled, out_enabled);
+    TEST_ASSERT_EQUAL_UINT8(want_minutes, out_minutes);
+}
+
+static void test_auto_off_dial_off_and_first_stop(void)
+{
+    check_dial(false, 10, 1, true, 1);    // + from Off: on at 1 min
+    check_dial(false, 45, 1, true, 1);
+    check_dial(true, 1, -1, false, 1);    // - from 1: Off, minutes kept
+    check_dial(false, 10, -1, false, 10); // - at Off: stays Off, minutes kept
+    check_dial(false, 10, 0, false, 10);
+}
+
+static void test_auto_off_dial_steps_through_choices(void)
+{
+    const uint8_t stops[] = { 1, 2, 5, 10, 15, 20, 30, 45, 60 };
+    for (size_t i = 0; i + 1 < sizeof(stops); i++) {
+        check_dial(true, stops[i], 1, true, stops[i + 1]);
+        check_dial(true, stops[i + 1], -1, true, stops[i]);
+    }
+}
+
+static void test_auto_off_dial_clamps_at_top(void)
+{
+    check_dial(true, 60, 1, true, 60);
+    check_dial(true, 60, 5, true, 60);
+    check_dial(true, 10, 0, true, 10);
+}
+
+static void test_auto_off_dial_snaps_non_choices(void)
+{
+    check_dial(true, 7, 0, true, 5);
+    check_dial(true, 7, 1, true, 10);
+    check_dial(true, 0, -1, false, 1);   // snaps to 1, then - goes Off
+    check_dial(true, 200, 1, true, 60);
+    check_dial(false, 7, 0, false, 5);
+}
+
+static void test_auto_off_dial_index(void)
+{
+    TEST_ASSERT_EQUAL_UINT8(0, puck_settings_auto_off_dial_index(false, 10));
+    TEST_ASSERT_EQUAL_UINT8(0, puck_settings_auto_off_dial_index(false, 60));
+    TEST_ASSERT_EQUAL_UINT8(1, puck_settings_auto_off_dial_index(true, 1));
+    TEST_ASSERT_EQUAL_UINT8(4, puck_settings_auto_off_dial_index(true, 10));
+    TEST_ASSERT_EQUAL_UINT8(PUCK_AUTO_OFF_DIAL_STOPS - 1, puck_settings_auto_off_dial_index(true, 60));
+    TEST_ASSERT_EQUAL_UINT8(3, puck_settings_auto_off_dial_index(true, 6));  // nearest: 5
+}
+
 static void test_step_timer_up_and_down(void)
 {
     TEST_ASSERT_EQUAL_UINT8(60, puck_settings_step_timer(55, 1));
@@ -264,7 +327,7 @@ static void expect_default_colors(const puck_settings_t *s)
     }
 }
 
-static void test_encode_matches_v5_fixture(void)
+static void test_encode_matches_v6_fixture(void)
 {
     settings.battery_display = PUCK_BATTERY_DISPLAY_ICON_PERCENT;
     settings.player_background[0] = 0x3D91BC;
@@ -273,8 +336,21 @@ static void test_encode_matches_v5_fixture(void)
     settings.player_text[1] = 0x000000;
     settings.timer_enabled = false;
     settings.brightness = 30;
-    TEST_ASSERT_EQUAL(27, puck_settings_encode(&settings, buf, sizeof(buf)));
-    TEST_ASSERT_EQUAL_UINT8_ARRAY(V5_BRIGHTNESS_FIXTURE, buf, sizeof(V5_BRIGHTNESS_FIXTURE));
+    settings.p2_same_way = true;
+    TEST_ASSERT_EQUAL(28, puck_settings_encode(&settings, buf, sizeof(buf)));
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(V6_SAME_WAY_FIXTURE, buf, sizeof(V6_SAME_WAY_FIXTURE));
+}
+
+static void test_v6_fixture_decodes(void)
+{
+    puck_settings_t out;
+    memset(&out, 0, sizeof(out));
+    TEST_ASSERT_EQUAL(PUCK_STATE_OK,
+                      puck_settings_decode(V6_SAME_WAY_FIXTURE, sizeof(V6_SAME_WAY_FIXTURE), &out));
+    TEST_ASSERT_TRUE(out.p2_same_way);
+    TEST_ASSERT_EQUAL_UINT8(30, out.brightness);
+    TEST_ASSERT_FALSE(out.timer_enabled);
+    TEST_ASSERT_EQUAL_HEX32(0xD6AC48, out.player_background[1]);
 }
 
 static void test_v5_fixture_decodes(void)
@@ -288,6 +364,7 @@ static void test_v5_fixture_decodes(void)
     TEST_ASSERT_EQUAL_UINT8(PUCK_BATTERY_DISPLAY_ICON_PERCENT, out.battery_display);
     TEST_ASSERT_EQUAL_HEX32(0x3D91BC, out.player_background[0]);
     TEST_ASSERT_EQUAL_HEX32(0x000000, out.player_text[1]);
+    TEST_ASSERT_FALSE(out.p2_same_way);  // added in v6: faces across
 }
 
 static void test_v4_fixture_decodes(void)
@@ -298,6 +375,7 @@ static void test_v4_fixture_decodes(void)
                       puck_settings_decode(V4_TIMER_OFF_FIXTURE, sizeof(V4_TIMER_OFF_FIXTURE), &out));
     TEST_ASSERT_FALSE(out.timer_enabled);
     TEST_ASSERT_EQUAL_UINT8(60, out.brightness);  // added in v5
+    TEST_ASSERT_FALSE(out.p2_same_way);
     TEST_ASSERT_EQUAL_UINT8(PUCK_BATTERY_DISPLAY_ICON_PERCENT, out.battery_display);
     TEST_ASSERT_EQUAL_HEX32(0x3D91BC, out.player_background[0]);
     TEST_ASSERT_EQUAL_HEX32(0x000000, out.player_text[1]);
@@ -379,11 +457,12 @@ static void test_round_trip_non_default(void)
                            .player_background = { 0x010203, 0xFFFFFF },
                            .player_text = { 0xABCDEF, 0x102030 },
                            .timer_enabled = false,
-                           .brightness = 100 };
-    TEST_ASSERT_EQUAL(27, puck_settings_encode(&in, buf, sizeof(buf)));
+                           .brightness = 100,
+                           .p2_same_way = true };
+    TEST_ASSERT_EQUAL(28, puck_settings_encode(&in, buf, sizeof(buf)));
     puck_settings_t out;
     memset(&out, 0, sizeof(out));
-    TEST_ASSERT_EQUAL(PUCK_STATE_OK, puck_settings_decode(buf, 27, &out));
+    TEST_ASSERT_EQUAL(PUCK_STATE_OK, puck_settings_decode(buf, 28, &out));
     TEST_ASSERT_EQUAL_MEMORY(&in, &out, sizeof(in));
 }
 
@@ -394,10 +473,10 @@ static void test_encoded_size_fits_max(void)
 
 static void test_encode_rejects_small_buffer(void)
 {
-    uint8_t small[26];
+    uint8_t small[27];
     TEST_ASSERT_EQUAL(0, puck_settings_encode(&settings, small, sizeof(small)));
     TEST_ASSERT_EQUAL(0, puck_settings_encode(&settings, small, 0));
-    TEST_ASSERT_EQUAL(27, puck_settings_encode(&settings, buf, 27));
+    TEST_ASSERT_EQUAL(28, puck_settings_encode(&settings, buf, 28));
 }
 
 static void test_rejects_too_short(void)
@@ -415,7 +494,7 @@ static void test_rejects_bad_magic(void)
 
 static void test_rejects_unknown_version(void)
 {
-    uint8_t versions[] = { 0, 6, 255 };
+    uint8_t versions[] = { 0, 7, 255 };
     for (size_t i = 0; i < sizeof(versions); i++) {
         buf[4] = versions[i];
         refresh_crc(buf, encoded_len);
@@ -423,42 +502,41 @@ static void test_rejects_unknown_version(void)
     }
 }
 
+// Data of version v copied from the current encoding, at a given length.
+static void expect_version_at_length_rejected(uint8_t version, size_t len)
+{
+    uint8_t copy[PUCK_SETTINGS_ENCODED_MAX];
+    memcpy(copy, buf, len);
+    copy[4] = version;
+    refresh_crc(copy, len);
+    expect_rejected(copy, len, PUCK_STATE_ERR_SIZE);
+}
+
 static void test_rejects_wrong_length(void)
 {
-    uint8_t longer[28];
+    uint8_t longer[29];
     memcpy(longer, buf, encoded_len);
-    longer[27] = 0;
+    longer[28] = 0;
     expect_rejected(longer, sizeof(longer), PUCK_STATE_ERR_SIZE);
-    // Version 5 data cut to version 2's length, and version 2 padded to 5's.
-    expect_rejected(buf, 13, PUCK_STATE_ERR_SIZE);
-    uint8_t v2_long[27];
-    memcpy(v2_long, buf, sizeof(v2_long));
-    v2_long[4] = 2;
-    refresh_crc(v2_long, sizeof(v2_long));
-    expect_rejected(v2_long, sizeof(v2_long), PUCK_STATE_ERR_SIZE);
-    // Version 3 data at version 5's length, and version 5 data at 3's length.
-    uint8_t v3_long[27];
-    memcpy(v3_long, buf, sizeof(v3_long));
-    v3_long[4] = 3;
-    refresh_crc(v3_long, sizeof(v3_long));
-    expect_rejected(v3_long, sizeof(v3_long), PUCK_STATE_ERR_SIZE);
-    expect_rejected(V5_BRIGHTNESS_FIXTURE, 25, PUCK_STATE_ERR_SIZE);
-    // Version 4 data at version 5's length, and version 5 data at 4's length.
-    uint8_t v4_long[27];
-    memcpy(v4_long, buf, sizeof(v4_long));
-    v4_long[4] = 4;
-    refresh_crc(v4_long, sizeof(v4_long));
-    expect_rejected(v4_long, sizeof(v4_long), PUCK_STATE_ERR_SIZE);
+    // Each older version at the current length.
+    for (uint8_t v = 1; v < 6; v++) {
+        expect_version_at_length_rejected(v, encoded_len);
+    }
+    // The current version cut to each older version's length.
+    const size_t older[] = { 13, 25, 26, 27 };
+    for (size_t i = 0; i < sizeof(older) / sizeof(older[0]); i++) {
+        expect_rejected(buf, older[i], PUCK_STATE_ERR_SIZE);
+        expect_rejected(V6_SAME_WAY_FIXTURE, older[i], PUCK_STATE_ERR_SIZE);
+    }
     expect_rejected(V5_BRIGHTNESS_FIXTURE, 26, PUCK_STATE_ERR_SIZE);
     expect_rejected(V4_TIMER_OFF_FIXTURE, 27, PUCK_STATE_ERR_SIZE);
-    expect_rejected(buf, encoded_len - 1, PUCK_STATE_ERR_SIZE);
     expect_rejected(buf, 9, PUCK_STATE_ERR_SIZE);
 }
 
 static void test_rejects_corruption(void)
 {
     for (size_t i = 5; i < encoded_len; i++) {
-        uint8_t copy[27];
+        uint8_t copy[28];
         memcpy(copy, buf, sizeof(copy));
         copy[i] ^= 0x01;
         expect_rejected(copy, sizeof(copy), PUCK_STATE_ERR_CRC);
@@ -480,7 +558,11 @@ static void test_rejects_non_boolean_bytes(void)
     refresh_crc(v1, sizeof(v1));
     expect_rejected(v1, sizeof(v1), PUCK_STATE_ERR_INVALID);
     setUp();
-    buf[encoded_len - 6] = 2;  // v4+: timer_enabled must be 0 or 1
+    buf[encoded_len - 7] = 2;  // v4+: timer_enabled must be 0 or 1
+    refresh_crc(buf, encoded_len);
+    expect_rejected(buf, encoded_len, PUCK_STATE_ERR_INVALID);
+    setUp();
+    buf[encoded_len - 5] = 2;  // v6: p2_same_way must be 0 or 1
     refresh_crc(buf, encoded_len);
     expect_rejected(buf, encoded_len, PUCK_STATE_ERR_INVALID);
 }
@@ -490,7 +572,7 @@ static void test_rejects_invalid_brightness(void)
     uint8_t bad[] = { 0, 5, 55, 105, 255 };
     for (size_t i = 0; i < sizeof(bad); i++) {
         setUp();
-        buf[encoded_len - 5] = bad[i];  // v5: brightness
+        buf[encoded_len - 6] = bad[i];  // v5: brightness
         refresh_crc(buf, encoded_len);
         expect_rejected(buf, encoded_len, PUCK_STATE_ERR_INVALID);
     }
@@ -523,13 +605,19 @@ int main(void)
     RUN_TEST(test_step_auto_off_clamps_at_ends);
     RUN_TEST(test_step_auto_off_from_non_choice);
     RUN_TEST(test_step_auto_off_dir_zero_snaps_to_nearest);
+    RUN_TEST(test_auto_off_dial_off_and_first_stop);
+    RUN_TEST(test_auto_off_dial_steps_through_choices);
+    RUN_TEST(test_auto_off_dial_clamps_at_top);
+    RUN_TEST(test_auto_off_dial_snaps_non_choices);
+    RUN_TEST(test_auto_off_dial_index);
     RUN_TEST(test_step_timer_up_and_down);
     RUN_TEST(test_step_timer_clamps);
     RUN_TEST(test_is_valid_brightness_range_and_step);
     RUN_TEST(test_step_brightness_up_and_down);
     RUN_TEST(test_step_brightness_clamps);
     RUN_TEST(test_is_valid_rejects_out_of_range_colors);
-    RUN_TEST(test_encode_matches_v5_fixture);
+    RUN_TEST(test_encode_matches_v6_fixture);
+    RUN_TEST(test_v6_fixture_decodes);
     RUN_TEST(test_v5_fixture_decodes);
     RUN_TEST(test_v4_fixture_decodes);
     RUN_TEST(test_v3_fixture_decodes);

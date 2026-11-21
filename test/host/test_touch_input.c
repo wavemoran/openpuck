@@ -26,14 +26,20 @@ static void test_long_press_uses_big_step(void)
     TEST_ASSERT_EQUAL_INT16(-PUCK_LONG_PRESS_STEP, puck_touch_delta(230, 240, true));
 }
 
-static void check_target(int32_t x, int32_t y, uint8_t count, bool lp,
-                         uint8_t want_player, int16_t want_delta)
+static void check_target_way(int32_t x, int32_t y, uint8_t count, bool same_way, bool lp,
+                             uint8_t want_player, int16_t want_delta)
 {
     uint8_t player = 99;
     int16_t delta = 0;
-    TEST_ASSERT_TRUE(puck_touch_target(x, y, 240, 240, count, lp, &player, &delta));
+    TEST_ASSERT_TRUE(puck_touch_target(x, y, 240, 240, count, same_way, lp, &player, &delta));
     TEST_ASSERT_EQUAL_UINT8(want_player, player);
     TEST_ASSERT_EQUAL_INT16(want_delta, delta);
+}
+
+static void check_target(int32_t x, int32_t y, uint8_t count, bool lp,
+                         uint8_t want_player, int16_t want_delta)
+{
+    check_target_way(x, y, count, false, lp, want_player, want_delta);
 }
 
 static void test_target_one_player_uses_halves(void)
@@ -71,12 +77,23 @@ static void test_target_two_players_long_press(void)
     check_target(200, 40, 2, true, 1, -PUCK_LONG_PRESS_STEP);
 }
 
+static void test_target_two_players_same_way(void)
+{
+    check_target_way(50, 200, 2, true, false, 0, -1);   // bottom: unchanged
+    check_target_way(200, 200, 2, true, false, 0, 1);
+    check_target_way(50, 40, 2, true, false, 1, -1);    // top left: - like P1
+    check_target_way(200, 40, 2, true, true, 1, PUCK_LONG_PRESS_STEP);
+    check_target_way(119, 40, 2, true, false, 1, -1);
+    check_target_way(120, 40, 2, true, false, 1, 1);
+    check_target_way(10, 10, 1, true, false, 0, 1);     // 1 player ignores it
+}
+
 static void test_target_rejects_bad_player_count(void)
 {
     uint8_t player = 7;
     int16_t delta = 7;
-    TEST_ASSERT_FALSE(puck_touch_target(10, 10, 240, 240, 0, false, &player, &delta));
-    TEST_ASSERT_FALSE(puck_touch_target(10, 10, 240, 240, 3, false, &player, &delta));
+    TEST_ASSERT_FALSE(puck_touch_target(10, 10, 240, 240, 0, false, false, &player, &delta));
+    TEST_ASSERT_FALSE(puck_touch_target(10, 10, 240, 240, 3, false, false, &player, &delta));
     TEST_ASSERT_EQUAL_UINT8(7, player);
     TEST_ASSERT_EQUAL_INT16(7, delta);
 }
@@ -207,6 +224,7 @@ int main(void)
     RUN_TEST(test_target_two_players_quadrants);
     RUN_TEST(test_target_two_players_boundaries);
     RUN_TEST(test_target_two_players_long_press);
+    RUN_TEST(test_target_two_players_same_way);
     RUN_TEST(test_target_rejects_bad_player_count);
     RUN_TEST(test_center_inside_and_outside);
     RUN_TEST(test_center_radius_is_inclusive);
