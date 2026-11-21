@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/wavemoran/openpuck/compare/v0.3.0...v0.4.0) (2026-11-21)
+
+
+### Features
+
+* menu rework — every option on the quadrant ring ([#12](https://github.com/wavemoran/openpuck/issues/12)) ([bb08f8e](https://github.com/wavemoran/openpuck/commit/bb08f8e052db2d163210de1e0f2911a2c312835d))
+
 ## [0.3.0](https://github.com/wavemoran/openpuck/compare/v0.2.1...v0.3.0) (2026-11-17)
 
 
