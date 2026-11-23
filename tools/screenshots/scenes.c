@@ -115,6 +115,9 @@ static void open_menu(void)
 #define Q_TOP_RIGHT    180, 60
 #define Q_BOTTOM_LEFT  60, 180
 #define Q_BOTTOM_RIGHT 180, 180
+// The timer dial's preset pills.
+#define PRESET_55      87, 200
+#define PRESET_75      153, 200
 // Halves of the two-zone Custom ring.
 #define H_TOP          CENTER, 40
 #define H_BOTTOM       CENTER, 200
@@ -284,6 +287,16 @@ static void scene_timer_set(void)
     touch_tap(Q_TOP_RIGHT, 300);
     touch_tap(Q_BOTTOM_RIGHT, 300);
     render_save("timer-set");
+
+    // The preset pills set the length; a new game leaves the timer alone.
+    touch_tap(PRESET_75, 300);
+    check(counter_settings()->timer_minutes == 75, "75 preset");
+    touch_tap(PRESET_55, 300);
+    check(counter_settings()->timer_minutes == 55, "55 preset");
+    const uint32_t elapsed = puck_timer_elapsed_ms(counter_timer(), render_now());
+    counter_new_game(1, render_now());
+    check(elapsed > 0 && puck_timer_elapsed_ms(counter_timer(), render_now()) == elapsed,
+          "new game keeps the timer");
 }
 
 static void scene_history(void)

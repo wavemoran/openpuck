@@ -22,8 +22,8 @@ const puck_game_t *counter_game(void);
 // clamping) is recorded in the history.
 int16_t counter_adjust(uint8_t player, int16_t delta, uint32_t now_ms);
 
-// Start a new game at 0: clears the history and resets the timer to the
-// duration from the settings.
+// Start a new game at 0: clears the history. The timer is left as it is (a
+// round of several games runs on one clock); reset it from the Timer menu.
 void counter_new_game(uint8_t player_count, uint32_t now_ms);
 
 const puck_history_t *counter_history(void);

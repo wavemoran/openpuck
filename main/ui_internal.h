@@ -39,10 +39,15 @@ typedef struct {
     uint16_t permille;   // rim arc fill, 0-1000
     bool at_min;         // "-" dimmed and ignored
     bool at_max;         // "+" dimmed and ignored
+    int8_t preset;       // index of the preset pill matching the value, or -1
 } ui_dial_state_t;
+#define UI_DIAL_MAX_PRESETS 2
 typedef struct {
     const char *title;
-    const char *range;               // the range line near the bottom
+    const char *range;               // the range line near the bottom (no presets)
+    const char *presets[UI_DIAL_MAX_PRESETS]; // pill labels in place of the range line;
+    uint8_t preset_count;            //   0 shows the range line instead
+    void (*apply_preset)(uint8_t index);    // a pill was tapped
     void (*read)(ui_dial_state_t *state);   // the current value
     void (*step)(int dir);           // apply one step down (-1) or up (+1)
     void (*closed)(void);            // after closing: where to go back to

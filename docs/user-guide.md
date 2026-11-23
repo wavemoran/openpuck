@@ -145,8 +145,9 @@ In these rings the center says **Back** and takes you to the main menu.
 | **2 players** | bottom right | Start a two player game. |
 
 The game you are playing now is marked "playing now". Every new game sets all
-numbers back to 0, clears the history and resets the timer, and the menu
-closes.
+numbers back to 0 and clears the history, and the menu closes. The timer
+**keeps going**, so a best-of-three round plays out on one clock. Use **Reset**
+in the Timer menu to start the next round's timer.
 
 **P2 faces** decides how player 2's half of the screen is turned:
 
@@ -179,7 +180,12 @@ Start, Pause, Reset and Timer on/off close the menu.
 with the number in the middle and a round **-** and **+** button on each side.
 Tap a button to change the length by 5 minutes. Hold it to keep going. The
 length can be anywhere from 5 to 180 minutes. The ring around the edge fills up
-as the length grows, and a button is dimmed when you reach that end. **Tap the
+as the length grows, and a button is dimmed when you reach that end.
+
+Below the number are two shortcuts, **55** and **75**. Tap one to set that
+length straight away. The one that matches the current length is filled in.
+
+**Tap the
 number or the title** (it has a small **<** in front of it), or press the power
 button, to go back to the counter. This is the
 only place to set the length.
@@ -221,8 +227,10 @@ and on the line in the middle in a two player game.
 - If you turn the puck off, the timer comes back **paused** with the time it
   had when it was saved. It does not count while the puck is off.
 - If you change the timer length, the remaining time changes with it.
-- A new game resets the timer. Turn the timer off in the Timer menu if you do
-  not want it on screen.
+- A new game does **not** reset the timer: games two and three of a
+  best-of-three round run on the same clock. Reset it from the Timer menu when
+  the round is over. Turn the timer off in the Timer menu if you do not want it
+  on screen.
 
 ## History
 

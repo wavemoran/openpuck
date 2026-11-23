@@ -124,9 +124,8 @@ void counter_new_game(uint8_t player_count, uint32_t now_ms)
 {
     if (puck_game_new(&s_game, player_count, STARTING_VALUE)) {
         puck_history_clear(&s_history);
-        puck_timer_init(&s_timer, timer_duration_ms());
-        sync_timer_flag();
-        note_change(true, true, true, now_ms);
+        // The timer is left alone: a best-of-three round runs on one clock.
+        note_change(true, true, false, now_ms);
     }
 }
 
