@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/wavemoran/openpuck/compare/v0.4.0...v0.5.0) (2026-11-23)
+
+
+### Features
+
+* timer keeps running across new games, 55/75 presets ([#14](https://github.com/wavemoran/openpuck/issues/14)) ([4e23c1d](https://github.com/wavemoran/openpuck/commit/4e23c1d8c49be465a6b564940a582b352fc7718c))
+
 ## [0.4.0](https://github.com/wavemoran/openpuck/compare/v0.3.0...v0.4.0) (2026-11-21)
 
 
